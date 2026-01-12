@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from intentbid.app.api.deps import require_vendor
 from intentbid.app.core.schemas import (
@@ -8,6 +8,7 @@ from intentbid.app.core.schemas import (
     VendorMeResponse,
     VendorRegisterRequest,
     VendorRegisterResponse,
+    VendorOnboardingStatusResponse,
     VendorWebhookCreateRequest,
     VendorWebhookCreateResponse,
 )
@@ -18,6 +19,7 @@ from intentbid.app.services.vendor_service import (
     revoke_vendor_key,
 )
 from intentbid.app.services.webhook_service import register_vendor_webhook
+from intentbid.app.db.models import VendorApiKey, VendorWebhook
 
 router = APIRouter(prefix="/v1/vendors", tags=["vendors"])
 
@@ -78,3 +80,30 @@ def create_vendor_webhook(
         url=webhook.url,
         secret=webhook.secret,
     )
+
+
+@router.get("/onboarding/status", response_model=VendorOnboardingStatusResponse)
+def get_onboarding_status(
+    vendor=Depends(require_vendor),
+    session: Session = Depends(get_session),
+) -> VendorOnboardingStatusResponse:
+    has_key = session.exec(
+        select(VendorApiKey).where(
+            VendorApiKey.vendor_id == vendor.id,
+            VendorApiKey.status == "active",
+        )
+    ).first() is not None
+    has_webhook = session.exec(
+        select(VendorWebhook).where(
+            VendorWebhook.vendor_id == vendor.id,
+            VendorWebhook.is_active.is_(True),
+        )
+    ).first() is not None
+
+    steps = {
+        "api_key": has_key,
+        "webhook": has_webhook,
+        "test_call": False,
+        "go_live": False,
+    }
+    return VendorOnboardingStatusResponse(vendor_id=vendor.id, steps=steps)

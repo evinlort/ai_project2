@@ -42,6 +42,11 @@ class VendorWebhookCreateResponse(BaseModel):
     secret: str
 
 
+class VendorOnboardingStatusResponse(BaseModel):
+    vendor_id: int
+    steps: Dict[str, bool]
+
+
 class VendorKeyCreateResponse(BaseModel):
     key_id: int
     api_key: str
