@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card">
+  <span class="pill">IntentBid API</span>
+  <h2>Примеры запросов</h2>
+  <p class="muted">Быстрый старт: зарегистрируйте продавца, создайте RFO и отправьте оффер.</p>
+</section>
+
+<section class="grid two" style="margin-top: 24px;">
+  <article class="card">
+    <h3>Регистрация продавца</h3>
+    <pre><code>curl -X POST http://localhost:8000/v1/vendors/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Acme"}'</code></pre>
+  </article>
+  <article class="card">
+    <h3>Создание RFO</h3>
+    <pre><code>curl -X POST http://localhost:8000/v1/rfo \
+  -H "Content-Type: application/json" \
+  -d '{
+    "category": "sneakers",
+    "constraints": {"budget_max": 120, "size": 42, "delivery_deadline_days": 3},
+    "preferences": {"w_price": 0.6, "w_delivery": 0.3, "w_warranty": 0.1}
+  }'</code></pre>
+  </article>
+  <article class="card">
+    <h3>Отправка оффера</h3>
+    <pre><code>curl -X POST http://localhost:8000/v1/offers \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: &lt;api_key&gt;" \
+  -d '{
+    "rfo_id": 1,
+    "price_amount": 109.99,
+    "currency": "USD",
+    "delivery_eta_days": 2,
+    "warranty_months": 12,
+    "return_days": 30,
+    "stock": true,
+    "metadata": {"sku": "ABC"}
+  }'</code></pre>
+  </article>
+  <article class="card">
+    <h3>Лучшие офферы</h3>
+    <pre><code>curl http://localhost:8000/v1/rfo/1
+curl "http://localhost:8000/v1/rfo/1/best?top_k=3"</code></pre>
+  </article>
+</section>
+
+<section class="card" style="margin-top: 24px;">
+  <h3>Панель продавца</h3>
+  <p class="muted">Русская версия панели доступна по ссылке ниже.</p>
+  <a href="/ru/dashboard/login">Перейти в панель</a>
+</section>
+{% endblock %}

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title or "IntentBid Панель" }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Noto+Sans:wght@400;600&family=Noto+Serif:wght@600&family=Space+Grotesk:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f6f0e8;
+        --bg-accent: #fdf7ef;
+        --ink: #1e1b18;
+        --muted: #6b6258;
+        --accent: #d76a1a;
+        --accent-2: #2f7b5e;
+        --card: #ffffff;
+        --shadow: 0 18px 40px rgba(35, 23, 11, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", "Noto Sans", sans-serif;
+        color: var(--ink);
+        background: radial-gradient(circle at top right, #f8f2dd 0%, transparent 45%),
+          radial-gradient(circle at 10% 20%, #e6f3ee 0%, transparent 40%),
+          linear-gradient(120deg, var(--bg) 0%, var(--bg-accent) 100%);
+        min-height: 100vh;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 24px 40px;
+      }
+
+      header h1 {
+        font-family: "Fraunces", "Noto Serif", serif;
+        font-size: 28px;
+        margin: 0;
+      }
+
+      nav a {
+        margin-left: 16px;
+        text-decoration: none;
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      nav a:hover {
+        color: var(--accent);
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px 40px 64px;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+      }
+
+      .grid {
+        display: grid;
+        gap: 20px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+
+      .pill {
+        display: inline-flex;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(215, 106, 26, 0.12);
+        color: var(--accent);
+        font-weight: 600;
+        font-size: 12px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      form {
+        display: grid;
+        gap: 12px;
+      }
+
+      label {
+        font-weight: 600;
+      }
+
+      input,
+      select,
+      textarea {
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(30, 27, 24, 0.15);
+        font-family: inherit;
+        font-size: 14px;
+      }
+
+      button {
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        background: var(--accent-2);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 10px 8px;
+        border-bottom: 1px solid rgba(30, 27, 24, 0.1);
+      }
+
+      pre {
+        margin: 0;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: #211a14;
+        color: #f8f2dd;
+        overflow-x: auto;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      code {
+        font-family: "Space Grotesk", "Noto Sans", sans-serif;
+      }
+
+      .status {
+        font-weight: 600;
+      }
+
+      .status.won {
+        color: var(--accent-2);
+      }
+
+      .status.lost {
+        color: #a04b2a;
+      }
+
+      .notice {
+        padding: 12px 16px;
+        border-radius: 12px;
+        background: rgba(47, 123, 94, 0.12);
+      }
+
+      @media (max-width: 720px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+        }
+
+        .container {
+          padding: 16px 20px 48px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>IntentBid Панель продавца</h1>
+      <nav>
+        {% if api_key %}
+        <a href="/ru/dashboard/rfos?api_key={{ api_key }}">RFO</a>
+        <a href="/ru/dashboard/offers?api_key={{ api_key }}">Мои офферы</a>
+        {% endif %}
+        <a href="/ru/">Примеры API</a>
+        <a href="/ru/dashboard/login">Вход</a>
+      </nav>
+    </header>
+    <main class="container">
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card">
+  <span class="pill">RFO #{{ rfo.id }}</span>
+  <h2>{{ rfo.category }}</h2>
+  <p class="muted">Статус: {{ rfo.status }}</p>
+  <p class="muted">Ограничения: {{ rfo.constraints }}</p>
+  <p class="muted">Предпочтения: {{ rfo.preferences }}</p>
+</section>
+
+<section class="grid two" style="margin-top: 24px;">
+  <div class="card">
+    <h3>Отправить оффер</h3>
+    <form method="post" action="/ru/dashboard/rfos/{{ rfo.id }}/offers">
+      <input type="hidden" name="api_key" value="{{ api_key }}" />
+      <label for="price_amount">Цена</label>
+      <input id="price_amount" name="price_amount" type="number" step="0.01" required />
+
+      <label for="currency">Валюта</label>
+      <input id="currency" name="currency" type="text" value="USD" required />
+
+      <label for="delivery_eta_days">Срок доставки (дней)</label>
+      <input id="delivery_eta_days" name="delivery_eta_days" type="number" required />
+
+      <label for="warranty_months">Гарантия (месяцев)</label>
+      <input id="warranty_months" name="warranty_months" type="number" required />
+
+      <label for="return_days">Возврат (дней)</label>
+      <input id="return_days" name="return_days" type="number" required />
+
+      <label>
+        <input type="checkbox" name="stock" /> В наличии
+      </label>
+
+      <button type="submit" class="secondary">Отправить оффер</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Текущие офферы</h3>
+    {% if offers %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Цена</th>
+          <th>Срок</th>
+          <th>Гарантия</th>
+          <th>Наличие</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for offer in offers %}
+        <tr>
+          <td>{{ offer.id }}</td>
+          <td>{{ offer.price_amount }} {{ offer.currency }}</td>
+          <td>{{ offer.delivery_eta_days }} дней</td>
+          <td>{{ offer.warranty_months }} мес</td>
+          <td>{{ "Да" if offer.stock else "Нет" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">Пока нет офферов.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

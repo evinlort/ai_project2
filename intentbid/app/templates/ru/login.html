@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card" style="max-width: 520px; margin: 0 auto;">
+  <h2>Вход продавца</h2>
+  <p class="muted">Введите API-ключ, чтобы открыть панель.</p>
+  {% if error %}
+  <p class="notice">{{ error }}</p>
+  {% endif %}
+  <form method="post">
+    <label for="api_key">API-ключ</label>
+    <input id="api_key" name="api_key" type="text" placeholder="sk_live_..." required />
+    <button type="submit">Открыть панель</button>
+  </form>
+</section>
+{% endblock %}
