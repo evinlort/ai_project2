@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card">
+  <h2>My offers</h2>
+  <p class="muted">Track how your bids perform across RFOs.</p>
+</section>
+
+<section class="card" style="margin-top: 24px;">
+  {% if offers %}
+  <table>
+    <thead>
+      <tr>
+        <th>RFO</th>
+        <th>Price</th>
+        <th>ETA</th>
+        <th>Warranty</th>
+        <th>Score</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in offers %}
+      <tr>
+        <td>{{ row.rfo.id }}</td>
+        <td>{{ row.offer.price_amount }} {{ row.offer.currency }}</td>
+        <td>{{ row.offer.delivery_eta_days }} days</td>
+        <td>{{ row.offer.warranty_months }} months</td>
+        <td>{{ "%.2f" | format(row.score) }}</td>
+        <td class="status {{ row.status }}">{{ row.status }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No offers yet. Submit one from the RFO list.</p>
+  {% endif %}
+</section>
+{% endblock %}

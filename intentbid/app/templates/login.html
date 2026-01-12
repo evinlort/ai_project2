@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card" style="max-width: 520px; margin: 0 auto;">
+  <h2>Vendor login</h2>
+  <p class="muted">Enter your API key to open the dashboard.</p>
+  {% if error %}
+  <p class="notice">{{ error }}</p>
+  {% endif %}
+  <form method="post">
+    <label for="api_key">API key</label>
+    <input id="api_key" name="api_key" type="text" placeholder="sk_live_..." required />
+    <button type="submit">Open dashboard</button>
+  </form>
+</section>
+{% endblock %}

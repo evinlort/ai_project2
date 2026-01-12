@@ -7,9 +7,11 @@ app = FastAPI(title="IntentBid API")
 app.include_router(vendors_router)
 app.include_router(rfo_router)
 app.include_router(offers_router)
+app.include_router(dashboard_router)
 
 
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
 from intentbid.app.api.routes_offers import router as offers_router
+from intentbid.app.api.routes_dashboard import router as dashboard_router
