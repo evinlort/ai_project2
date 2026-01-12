@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class VendorRegisterRequest(BaseModel):
@@ -37,3 +37,18 @@ class RFODetailResponse(BaseModel):
     status: str
     created_at: datetime
     offers_count: int
+
+
+class OfferCreate(BaseModel):
+    rfo_id: int
+    price_amount: float
+    currency: str
+    delivery_eta_days: int
+    warranty_months: int
+    return_days: int
+    stock: bool
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class OfferCreateResponse(BaseModel):
+    offer_id: int
