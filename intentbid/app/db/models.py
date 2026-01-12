@@ -29,6 +29,33 @@ class VendorApiKey(SQLModel, table=True):
     vendor: Optional[Vendor] = Relationship(back_populates="api_keys")
 
 
+class VendorWebhook(SQLModel, table=True):
+    __tablename__ = "vendor_webhook"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    vendor_id: int = Field(foreign_key="vendor.id", index=True)
+    url: str
+    secret: str
+    is_active: bool = Field(default=True, index=True)
+    last_delivery_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class EventOutbox(SQLModel, table=True):
+    __tablename__ = "event_outbox"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    vendor_id: int = Field(foreign_key="vendor.id", index=True)
+    event_type: str
+    payload: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    status: str = Field(default="pending", index=True)
+    attempts: int = Field(default=0)
+    last_error: Optional[str] = None
+    next_attempt_at: Optional[datetime] = None
+    delivered_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class Buyer(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str

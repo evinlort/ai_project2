@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 from intentbid.app.core.config import settings
 from intentbid.app.core.schemas import OfferCreate
 from intentbid.app.db.models import Offer
+from intentbid.app.services.webhook_service import enqueue_event
 
 
 def create_offer(session: Session, vendor_id: int, payload: OfferCreate) -> Offer:
@@ -23,6 +24,16 @@ def create_offer(session: Session, vendor_id: int, payload: OfferCreate) -> Offe
     session.add(offer)
     session.commit()
     session.refresh(offer)
+    enqueue_event(
+        session,
+        vendor_id=vendor_id,
+        event_type="offer.created",
+        payload={
+            "offer_id": offer.id,
+            "rfo_id": offer.rfo_id,
+            "vendor_id": vendor_id,
+        },
+    )
     return offer
 
 

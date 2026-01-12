@@ -32,6 +32,16 @@ class BuyerMeResponse(BaseModel):
     name: str
 
 
+class VendorWebhookCreateRequest(BaseModel):
+    url: str
+
+
+class VendorWebhookCreateResponse(BaseModel):
+    webhook_id: int
+    url: str
+    secret: str
+
+
 class VendorKeyCreateResponse(BaseModel):
     key_id: int
     api_key: str

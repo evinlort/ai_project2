@@ -8,6 +8,8 @@ from intentbid.app.core.schemas import (
     VendorMeResponse,
     VendorRegisterRequest,
     VendorRegisterResponse,
+    VendorWebhookCreateRequest,
+    VendorWebhookCreateResponse,
 )
 from intentbid.app.db.session import get_session
 from intentbid.app.services.vendor_service import (
@@ -15,6 +17,7 @@ from intentbid.app.services.vendor_service import (
     register_vendor,
     revoke_vendor_key,
 )
+from intentbid.app.services.webhook_service import register_vendor_webhook
 
 router = APIRouter(prefix="/v1/vendors", tags=["vendors"])
 
@@ -60,4 +63,18 @@ def revoke_vendor_key_route(
         key_id=key.id,
         status=key.status,
         revoked_at=key.revoked_at,
+    )
+
+
+@router.post("/webhooks", response_model=VendorWebhookCreateResponse)
+def create_vendor_webhook(
+    payload: VendorWebhookCreateRequest,
+    vendor=Depends(require_vendor),
+    session: Session = Depends(get_session),
+) -> VendorWebhookCreateResponse:
+    webhook = register_vendor_webhook(session, vendor.id, payload.url)
+    return VendorWebhookCreateResponse(
+        webhook_id=webhook.id,
+        url=webhook.url,
+        secret=webhook.secret,
     )
