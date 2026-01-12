@@ -181,10 +181,19 @@ The `/v1/rfo/{id}/best` response includes an `explain` field with the breakdown.
 
 A minimal UI for vendors (Jinja2 templates):
 
-- Login: `http://localhost:8000/dashboard/login`
-- Open RFO list: `http://localhost:8000/dashboard/rfos`
-- RFO detail + submit offer: `http://localhost:8000/dashboard/rfos/<id>`
-- Your offers + win/loss: `http://localhost:8000/dashboard/offers`
+### Dashboard links (English)
+
+- Login: [http://localhost:8000/dashboard/login](http://localhost:8000/dashboard/login)
+- Open RFO list: [http://localhost:8000/dashboard/rfos](http://localhost:8000/dashboard/rfos)
+- RFO detail + submit offer: [http://localhost:8000/dashboard/rfos/<id>](http://localhost:8000/dashboard/rfos/<id>)
+- Your offers + win/loss: [http://localhost:8000/dashboard/offers](http://localhost:8000/dashboard/offers)
+
+### Dashboard links (Russian)
+
+- Login: [http://localhost:8000/ru/dashboard/login](http://localhost:8000/ru/dashboard/login)
+- Open RFO list: [http://localhost:8000/ru/dashboard/rfos](http://localhost:8000/ru/dashboard/rfos)
+- RFO detail + submit offer: [http://localhost:8000/ru/dashboard/rfos/<id>](http://localhost:8000/ru/dashboard/rfos/<id>)
+- Your offers + win/loss: [http://localhost:8000/ru/dashboard/offers](http://localhost:8000/ru/dashboard/offers)
 
 You can also pass `?api_key=...` to `/dashboard/rfos` if you want a direct link; the API key is stored in a cookie for convenience.
 
@@ -405,10 +414,16 @@ curl http://localhost:8000/v1/vendors/me -H "X-API-Key: <api_key>"
 
 Минимальный UI для продавцов (шаблоны Jinja2):
 
-- Логин: `http://localhost:8000/dashboard/login`
-- Список открытых RFO: `http://localhost:8000/dashboard/rfos`
-- Детали RFO + отправка оффера: `http://localhost:8000/dashboard/rfos/<id>`
-- Мои офферы + win/loss: `http://localhost:8000/dashboard/offers`
+### Ссылки на панели
+
+- Вход (английская панель): [http://localhost:8000/dashboard/login](http://localhost:8000/dashboard/login)
+- Список RFO (английская панель): [http://localhost:8000/dashboard/rfos](http://localhost:8000/dashboard/rfos)
+- Детали RFO + отправка (английская панель): [http://localhost:8000/dashboard/rfos/<id>](http://localhost:8000/dashboard/rfos/<id>)
+- Мои офферы (английская панель): [http://localhost:8000/dashboard/offers](http://localhost:8000/dashboard/offers)
+- Вход (русская панель): [http://localhost:8000/ru/dashboard/login](http://localhost:8000/ru/dashboard/login)
+- Список RFO (русская панель): [http://localhost:8000/ru/dashboard/rfos](http://localhost:8000/ru/dashboard/rfos)
+- Детали RFO + отправка (русская панель): [http://localhost:8000/ru/dashboard/rfos/<id>](http://localhost:8000/ru/dashboard/rfos/<id>)
+- Мои офферы (русская панель): [http://localhost:8000/ru/dashboard/offers](http://localhost:8000/ru/dashboard/offers)
 
 Можно также передать `?api_key=...` в `/dashboard/rfos` для прямой ссылки; для удобства ключ сохраняется в cookie.
 
