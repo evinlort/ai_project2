@@ -52,3 +52,30 @@ class OfferCreate(BaseModel):
 
 class OfferCreateResponse(BaseModel):
     offer_id: int
+
+
+class OfferPublic(BaseModel):
+    id: int
+    rfo_id: int
+    vendor_id: int
+    price_amount: float
+    currency: str
+    delivery_eta_days: int
+    warranty_months: int
+    return_days: int
+    stock: bool
+    metadata: Dict[str, Any]
+    created_at: datetime
+
+
+class BestOffer(BaseModel):
+    offer_id: int
+    vendor_id: int
+    score: float
+    explain: Dict[str, Any]
+    offer: OfferPublic
+
+
+class BestOffersResponse(BaseModel):
+    rfo_id: int
+    top_offers: list[BestOffer]
