@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: intentbid
       POSTGRES_DB: intentbid
     ports:
-      - "5432:5432"
+      - "15432:5432"
     volumes:
       - intentbid_db:/var/lib/postgresql/data
 

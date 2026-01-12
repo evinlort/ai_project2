@@ -25,8 +25,9 @@ dev = [
   "pytest>=7.4",
 ]
 
-[tool.setuptools]
-packages = ["intentbid"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["intentbid*"]
 
 [tool.pytest.ini_options]
 addopts = "-q"

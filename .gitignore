@@ -6,4 +6,6 @@ __pycache__/
 .vscode/
 .DS_Store
 .pytest_cache/
+build/
+intentbid.egg-info/
 intentbid/scripts/demo_vendors.json
