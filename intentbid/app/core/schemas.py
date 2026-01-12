@@ -18,6 +18,19 @@ class VendorMeResponse(BaseModel):
     name: str
 
 
+class VendorKeyCreateResponse(BaseModel):
+    key_id: int
+    api_key: str
+    status: str
+    created_at: datetime
+
+
+class VendorKeyRevokeResponse(BaseModel):
+    key_id: int
+    status: str
+    revoked_at: datetime | None
+
+
 class RFOCreate(BaseModel):
     category: str
     constraints: Dict[str, Any]

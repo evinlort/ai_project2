@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import Column, JSON
+from sqlalchemy import Column, String
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -12,6 +13,21 @@ class Vendor(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     offers: List["Offer"] = Relationship(back_populates="vendor")
+    api_keys: List["VendorApiKey"] = Relationship(back_populates="vendor")
+
+
+class VendorApiKey(SQLModel, table=True):
+    __tablename__ = "vendor_api_key"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    vendor_id: int = Field(foreign_key="vendor.id", index=True)
+    hashed_key: str = Field(sa_column=Column(String, unique=True), index=True)
+    status: str = Field(default="active", index=True)
+    last_used_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    revoked_at: Optional[datetime] = None
+
+    vendor: Optional[Vendor] = Relationship(back_populates="api_keys")
 
 
 class RFO(SQLModel, table=True):

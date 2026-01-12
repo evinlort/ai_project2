@@ -1,9 +1,9 @@
 from fastapi import Depends, Header, HTTPException, status
-from sqlmodel import Session, select
+from sqlmodel import Session
 
-from intentbid.app.core.security import hash_api_key
 from intentbid.app.db.models import Vendor
 from intentbid.app.db.session import get_session
+from intentbid.app.services.vendor_service import get_vendor_by_api_key
 
 
 def require_vendor(
@@ -13,10 +13,7 @@ def require_vendor(
     if not api_key:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing API key")
 
-    api_key_hash = hash_api_key(api_key)
-    vendor = session.exec(
-        select(Vendor).where(Vendor.api_key_hash == api_key_hash)
-    ).first()
+    vendor = get_vendor_by_api_key(session, api_key)
     if not vendor:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
     return vendor
