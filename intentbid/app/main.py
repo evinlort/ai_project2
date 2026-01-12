@@ -32,3 +32,8 @@ def health_check():
 @app.get("/metrics", response_class=PlainTextResponse)
 def metrics_endpoint():
     return metrics.render()
+
+
+@app.get("/ready")
+def readiness_check():
+    return {"status": "ready"}
