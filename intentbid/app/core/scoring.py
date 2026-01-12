@@ -10,6 +10,7 @@ def _clamp01(value: float) -> float:
 def score_offer(offer: Offer, rfo: RFO) -> tuple[float, Dict[str, Any]]:
     constraints = rfo.constraints or {}
     preferences = rfo.preferences or {}
+    weights = rfo.weights or preferences
     penalties = []
 
     budget_max = constraints.get("budget_max")
@@ -35,9 +36,9 @@ def score_offer(offer: Offer, rfo: RFO) -> tuple[float, Dict[str, Any]]:
 
     warranty_score = _clamp01(offer.warranty_months / 24)
 
-    w_price = float(preferences.get("w_price", 0.5))
-    w_delivery = float(preferences.get("w_delivery", 0.3))
-    w_warranty = float(preferences.get("w_warranty", 0.2))
+    w_price = float(weights.get("w_price", 0.5))
+    w_delivery = float(weights.get("w_delivery", 0.3))
+    w_warranty = float(weights.get("w_warranty", 0.2))
 
     score = (w_price * price_score) + (w_delivery * delivery_score) + (w_warranty * warranty_score)
 
@@ -45,6 +46,11 @@ def score_offer(offer: Offer, rfo: RFO) -> tuple[float, Dict[str, Any]]:
         "price_score": price_score,
         "delivery_score": delivery_score,
         "warranty_score": warranty_score,
+        "components": {
+            "price_score": price_score,
+            "delivery_score": delivery_score,
+            "warranty_score": warranty_score,
+        },
         "weights": {
             "w_price": w_price,
             "w_delivery": w_delivery,

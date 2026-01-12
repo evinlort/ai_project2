@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlmodel import Session, select
 
@@ -29,7 +29,7 @@ def get_vendor_by_api_key(session: Session, api_key: str) -> Vendor | None:
     if key:
         if key.status != "active":
             return None
-        key.last_used_at = datetime.utcnow()
+        key.last_used_at = datetime.now(timezone.utc)
         session.add(key)
         session.commit()
         return session.get(Vendor, key.vendor_id)
@@ -44,7 +44,7 @@ def get_vendor_by_api_key(session: Session, api_key: str) -> Vendor | None:
         vendor_id=vendor.id,
         hashed_key=api_key_hash,
         status="active",
-        last_used_at=datetime.utcnow(),
+        last_used_at=datetime.now(timezone.utc),
     )
     session.add(key)
     session.commit()
@@ -70,7 +70,7 @@ def revoke_vendor_key(session: Session, vendor_id: int, key_id: int) -> VendorAp
         return None
     if key.status != "revoked":
         key.status = "revoked"
-        key.revoked_at = datetime.utcnow()
+        key.revoked_at = datetime.now(timezone.utc)
         session.add(key)
         session.commit()
         session.refresh(key)

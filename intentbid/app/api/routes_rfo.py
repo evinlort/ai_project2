@@ -7,18 +7,22 @@ from intentbid.app.core.schemas import (
     OfferPublic,
     RFOCreate,
     RFOCreateResponse,
+    RFOExplainResponse,
+    RFOScoringUpdateRequest,
+    RFOScoringUpdateResponse,
     RFOStatusUpdateRequest,
     RFOStatusUpdateResponse,
     RFODetailResponse,
 )
 from intentbid.app.db.session import get_session
-from intentbid.app.services.ranking_service import get_best_offers
+from intentbid.app.services.ranking_service import get_best_offers, get_ranked_offers
 from intentbid.app.services.rfo_service import (
     award_rfo,
     close_rfo,
     create_rfo,
     get_rfo_with_offers_count,
     reopen_rfo,
+    update_rfo_scoring_config,
 )
 
 router = APIRouter(prefix="/v1/rfo", tags=["rfo"])
@@ -88,6 +92,67 @@ def get_best_offers_route(
         )
 
     return BestOffersResponse(rfo_id=rfo.id, top_offers=top_offers)
+
+
+@router.get("/{rfo_id}/ranking/explain", response_model=RFOExplainResponse)
+def get_rfo_ranking_explain(
+    rfo_id: int,
+    session: Session = Depends(get_session),
+) -> RFOExplainResponse:
+    rfo, scored_offers = get_ranked_offers(session, rfo_id)
+    if not rfo:
+        raise HTTPException(status_code=404, detail="RFO not found")
+
+    offers = []
+    for offer, score, explain in scored_offers:
+        offers.append(
+            BestOffer(
+                offer_id=offer.id,
+                vendor_id=offer.vendor_id,
+                score=score,
+                explain=explain,
+                offer=OfferPublic(
+                    id=offer.id,
+                    rfo_id=offer.rfo_id,
+                    vendor_id=offer.vendor_id,
+                    price_amount=offer.price_amount,
+                    currency=offer.currency,
+                    delivery_eta_days=offer.delivery_eta_days,
+                    warranty_months=offer.warranty_months,
+                    return_days=offer.return_days,
+                    stock=offer.stock,
+                    metadata=offer.metadata_ or {},
+                    created_at=offer.created_at,
+                ),
+            )
+        )
+
+    return RFOExplainResponse(
+        rfo_id=rfo.id,
+        scoring_version=rfo.scoring_version,
+        offers=offers,
+    )
+
+
+@router.post("/{rfo_id}/scoring", response_model=RFOScoringUpdateResponse)
+def update_rfo_scoring(
+    rfo_id: int,
+    payload: RFOScoringUpdateRequest,
+    session: Session = Depends(get_session),
+) -> RFOScoringUpdateResponse:
+    rfo = update_rfo_scoring_config(
+        session,
+        rfo_id,
+        scoring_version=payload.scoring_version,
+        weights=payload.weights,
+    )
+    if not rfo:
+        raise HTTPException(status_code=404, detail="RFO not found")
+    return RFOScoringUpdateResponse(
+        rfo_id=rfo.id,
+        scoring_version=rfo.scoring_version,
+        weights=rfo.weights,
+    )
 
 
 @router.post("/{rfo_id}/close", response_model=RFOStatusUpdateResponse)

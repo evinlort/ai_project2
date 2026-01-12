@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import func
 from sqlmodel import Session, select
@@ -36,7 +36,7 @@ def _log_rfo_action(
         entity_id=rfo_id,
         action=action,
         metadata_=metadata or {},
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     session.add(audit)
 
@@ -75,3 +75,22 @@ def award_rfo(session: Session, rfo_id: int, reason: str | None = None) -> tuple
 
 def reopen_rfo(session: Session, rfo_id: int, reason: str | None = None) -> tuple[RFO | None, str | None]:
     return _transition_rfo(session, rfo_id, {"CLOSED"}, "OPEN", "reopen", reason)
+
+
+def update_rfo_scoring_config(
+    session: Session,
+    rfo_id: int,
+    scoring_version: str | None = None,
+    weights: dict | None = None,
+) -> RFO | None:
+    rfo = session.get(RFO, rfo_id)
+    if not rfo:
+        return None
+    if scoring_version:
+        rfo.scoring_version = scoring_version
+    if weights is not None:
+        rfo.weights = weights
+    session.add(rfo)
+    session.commit()
+    session.refresh(rfo)
+    return rfo

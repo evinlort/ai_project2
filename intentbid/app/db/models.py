@@ -1,8 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import Column, JSON, String
-from sqlalchemy import Column, String
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -10,7 +9,7 @@ class Vendor(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     api_key_hash: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     offers: List["Offer"] = Relationship(back_populates="vendor")
     api_keys: List["VendorApiKey"] = Relationship(back_populates="vendor")
@@ -24,7 +23,7 @@ class VendorApiKey(SQLModel, table=True):
     hashed_key: str = Field(sa_column=Column(String, unique=True, index=True))
     status: str = Field(default="active", index=True)
     last_used_at: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     revoked_at: Optional[datetime] = None
 
     vendor: Optional[Vendor] = Relationship(back_populates="api_keys")
@@ -33,7 +32,7 @@ class VendorApiKey(SQLModel, table=True):
 class Buyer(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     api_keys: List["BuyerApiKey"] = Relationship(back_populates="buyer")
 
@@ -46,7 +45,7 @@ class BuyerApiKey(SQLModel, table=True):
     hashed_key: str = Field(sa_column=Column(String, unique=True, index=True))
     status: str = Field(default="active", index=True)
     last_used_at: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     revoked_at: Optional[datetime] = None
 
     buyer: Optional[Buyer] = Relationship(back_populates="api_keys")
@@ -59,7 +58,9 @@ class RFO(SQLModel, table=True):
     preferences: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     status: str = Field(default="OPEN", index=True)
     status_reason: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    scoring_version: str = Field(default="v1")
+    weights: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     offers: List["Offer"] = Relationship(back_populates="rfo")
 
@@ -75,7 +76,7 @@ class AuditLog(SQLModel, table=True):
         default_factory=dict,
         sa_column=Column("metadata", JSON),
     )
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class Offer(SQLModel, table=True):
@@ -92,7 +93,7 @@ class Offer(SQLModel, table=True):
         default_factory=dict,
         sa_column=Column("metadata", JSON),
     )
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     vendor: Optional[Vendor] = Relationship(back_populates="offers")
     rfo: Optional[RFO] = Relationship(back_populates="offers")

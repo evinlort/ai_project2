@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlmodel import Session, select
 
@@ -30,7 +30,7 @@ def get_buyer_by_api_key(session: Session, api_key: str) -> Buyer | None:
     if key.status != "active":
         return None
 
-    key.last_used_at = datetime.utcnow()
+    key.last_used_at = datetime.now(timezone.utc)
     session.add(key)
     session.commit()
     return session.get(Buyer, key.buyer_id)

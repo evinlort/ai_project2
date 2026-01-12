@@ -66,6 +66,17 @@ class RFOStatusUpdateResponse(BaseModel):
     reason: str | None = None
 
 
+class RFOScoringUpdateRequest(BaseModel):
+    scoring_version: str | None = None
+    weights: Dict[str, float] | None = None
+
+
+class RFOScoringUpdateResponse(BaseModel):
+    rfo_id: int
+    scoring_version: str
+    weights: Dict[str, float]
+
+
 class RFODetailResponse(BaseModel):
     id: int
     category: str
@@ -120,4 +131,10 @@ class BestOffersResponse(BaseModel):
 
 class BuyerRankingResponse(BaseModel):
     rfo_id: int
+    offers: list[BestOffer]
+
+
+class RFOExplainResponse(BaseModel):
+    rfo_id: int
+    scoring_version: str
     offers: list[BestOffer]
