@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./intentbid.db"
     secret_key: str = "dev-secret"
     env: str = "dev"
+    max_offers_per_vendor_rfo: int = 5
+    offer_cooldown_seconds: int = 0
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

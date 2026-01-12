@@ -5,7 +5,7 @@ from intentbid.app.api.deps import require_vendor
 from intentbid.app.core.schemas import OfferCreate, OfferCreateResponse
 from intentbid.app.db.models import RFO
 from intentbid.app.db.session import get_session
-from intentbid.app.services.offer_service import create_offer
+from intentbid.app.services.offer_service import create_offer, validate_offer_submission
 
 router = APIRouter(prefix="/v1/offers", tags=["offers"])
 
@@ -21,6 +21,10 @@ def submit_offer(
         raise HTTPException(status_code=404, detail="RFO not found")
     if rfo.status != "OPEN":
         raise HTTPException(status_code=400, detail="RFO is closed")
+
+    ok, status_code, detail = validate_offer_submission(session, vendor.id, payload)
+    if not ok:
+        raise HTTPException(status_code=status_code or 400, detail=detail or "Invalid offer")
 
     offer = create_offer(session, vendor.id, payload)
     return OfferCreateResponse(offer_id=offer.id)
