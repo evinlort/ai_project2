@@ -30,6 +30,28 @@ class VendorApiKey(SQLModel, table=True):
     vendor: Optional[Vendor] = Relationship(back_populates="api_keys")
 
 
+class Buyer(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    api_keys: List["BuyerApiKey"] = Relationship(back_populates="buyer")
+
+
+class BuyerApiKey(SQLModel, table=True):
+    __tablename__ = "buyer_api_key"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    buyer_id: int = Field(foreign_key="buyer.id", index=True)
+    hashed_key: str = Field(sa_column=Column(String, unique=True, index=True))
+    status: str = Field(default="active", index=True)
+    last_used_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    revoked_at: Optional[datetime] = None
+
+    buyer: Optional[Buyer] = Relationship(back_populates="api_keys")
+
+
 class RFO(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     category: str

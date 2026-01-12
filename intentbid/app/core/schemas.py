@@ -18,6 +18,20 @@ class VendorMeResponse(BaseModel):
     name: str
 
 
+class BuyerRegisterRequest(BaseModel):
+    name: str
+
+
+class BuyerRegisterResponse(BaseModel):
+    buyer_id: int
+    api_key: str
+
+
+class BuyerMeResponse(BaseModel):
+    buyer_id: int
+    name: str
+
+
 class VendorKeyCreateResponse(BaseModel):
     key_id: int
     api_key: str
@@ -102,3 +116,8 @@ class BestOffer(BaseModel):
 class BestOffersResponse(BaseModel):
     rfo_id: int
     top_offers: list[BestOffer]
+
+
+class BuyerRankingResponse(BaseModel):
+    rfo_id: int
+    offers: list[BestOffer]
