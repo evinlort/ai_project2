@@ -56,6 +56,29 @@ class EventOutbox(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class PlanLimit(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    plan_code: str = Field(index=True)
+    max_offers_per_month: int
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class Subscription(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    vendor_id: int = Field(foreign_key="vendor.id", index=True)
+    plan_code: str
+    status: str = Field(default="active", index=True)
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    ended_at: Optional[datetime] = None
+
+
+class UsageEvent(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    vendor_id: int = Field(foreign_key="vendor.id", index=True)
+    event_type: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class Buyer(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str

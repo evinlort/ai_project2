@@ -6,6 +6,12 @@ from sqlmodel import Session, select
 from intentbid.app.core.config import settings
 from intentbid.app.core.schemas import OfferCreate
 from intentbid.app.db.models import Offer
+from intentbid.app.services.billing_service import (
+    get_active_subscription,
+    get_plan_limit,
+    is_within_offer_limit,
+    record_usage,
+)
 from intentbid.app.services.webhook_service import enqueue_event
 
 
@@ -34,6 +40,7 @@ def create_offer(session: Session, vendor_id: int, payload: OfferCreate) -> Offe
             "vendor_id": vendor_id,
         },
     )
+    record_usage(session, vendor_id=vendor_id, event_type="offer.created")
     return offer
 
 
@@ -42,6 +49,12 @@ def validate_offer_submission(
     vendor_id: int,
     payload: OfferCreate,
 ) -> tuple[bool, int | None, str | None]:
+    subscription = get_active_subscription(session, vendor_id)
+    if subscription:
+        plan = get_plan_limit(session, subscription.plan_code)
+        if plan and not is_within_offer_limit(session, vendor_id, plan.max_offers_per_month):
+            return False, 429, "Plan limit exceeded"
+
     if payload.price_amount <= 0:
         return False, 400, "Price must be positive"
     if payload.delivery_eta_days <= 0:
