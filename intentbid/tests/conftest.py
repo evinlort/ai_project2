@@ -7,6 +7,18 @@ from intentbid.app.main import app
 from intentbid.app.db.session import get_session
 
 
+class CompatTestClient(TestClient):
+    def get(self, url, **kwargs):
+        if "allow_redirects" in kwargs and "follow_redirects" not in kwargs:
+            kwargs["follow_redirects"] = kwargs.pop("allow_redirects")
+        return super().get(url, **kwargs)
+
+    def request(self, method, url, **kwargs):
+        if "allow_redirects" in kwargs and "follow_redirects" not in kwargs:
+            kwargs["follow_redirects"] = kwargs.pop("allow_redirects")
+        return super().request(method, url, **kwargs)
+
+
 @pytest.fixture(name="test_engine")
 def fixture_test_engine():
     engine = create_engine(
@@ -31,6 +43,6 @@ def fixture_client(session):
         yield session
 
     app.dependency_overrides[get_session] = override_get_session
-    client = TestClient(app)
+    client = CompatTestClient(app)
     yield client
     app.dependency_overrides.clear()
