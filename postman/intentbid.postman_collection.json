@@ -1,0 +1,72 @@
+{
+  "info": {
+    "name": "IntentBid API",
+    "_postman_id": "intentbid-collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register Vendor",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/v1/vendors/register",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "vendors", "register"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Acme\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create RFO",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/v1/rfo",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "rfo"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"category\": \"sneakers\",\n  \"constraints\": {\"budget_max\": 120, \"size\": 42},\n  \"preferences\": {\"w_price\": 0.6, \"w_delivery\": 0.3, \"w_warranty\": 0.1}\n}"
+        }
+      }
+    },
+    {
+      "name": "Submit Offer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "X-API-Key", "value": "{{vendor_api_key}}"}
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/offers",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "offers"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rfo_id\": 1,\n  \"price_amount\": 99.0,\n  \"currency\": \"USD\",\n  \"delivery_eta_days\": 2,\n  \"warranty_months\": 12,\n  \"return_days\": 30,\n  \"stock\": true,\n  \"metadata\": {\"sku\": \"ABC\"}\n}"
+        }
+      }
+    },
+    {
+      "name": "Best Offers",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/v1/rfo/1/best?top_k=3",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "rfo", "1", "best"],
+          "query": [{"key": "top_k", "value": "3"}]
+        }
+      }
+    }
+  ]
+}
