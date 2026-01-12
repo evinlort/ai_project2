@@ -42,6 +42,16 @@ class RFOCreateResponse(BaseModel):
     status: str
 
 
+class RFOStatusUpdateRequest(BaseModel):
+    reason: str | None = None
+
+
+class RFOStatusUpdateResponse(BaseModel):
+    rfo_id: int
+    status: str
+    reason: str | None = None
+
+
 class RFODetailResponse(BaseModel):
     id: int
     category: str

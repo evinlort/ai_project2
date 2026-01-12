@@ -7,11 +7,19 @@ from intentbid.app.core.schemas import (
     OfferPublic,
     RFOCreate,
     RFOCreateResponse,
+    RFOStatusUpdateRequest,
+    RFOStatusUpdateResponse,
     RFODetailResponse,
 )
 from intentbid.app.db.session import get_session
 from intentbid.app.services.ranking_service import get_best_offers
-from intentbid.app.services.rfo_service import create_rfo, get_rfo_with_offers_count
+from intentbid.app.services.rfo_service import (
+    award_rfo,
+    close_rfo,
+    create_rfo,
+    get_rfo_with_offers_count,
+    reopen_rfo,
+)
 
 router = APIRouter(prefix="/v1/rfo", tags=["rfo"])
 
@@ -80,3 +88,48 @@ def get_best_offers_route(
         )
 
     return BestOffersResponse(rfo_id=rfo.id, top_offers=top_offers)
+
+
+@router.post("/{rfo_id}/close", response_model=RFOStatusUpdateResponse)
+def close_rfo_route(
+    rfo_id: int,
+    payload: RFOStatusUpdateRequest | None = None,
+    session: Session = Depends(get_session),
+) -> RFOStatusUpdateResponse:
+    reason = payload.reason if payload else None
+    rfo, error = close_rfo(session, rfo_id, reason)
+    if error == "not_found":
+        raise HTTPException(status_code=404, detail="RFO not found")
+    if error == "invalid":
+        raise HTTPException(status_code=400, detail="Invalid RFO status transition")
+    return RFOStatusUpdateResponse(rfo_id=rfo.id, status=rfo.status, reason=rfo.status_reason)
+
+
+@router.post("/{rfo_id}/award", response_model=RFOStatusUpdateResponse)
+def award_rfo_route(
+    rfo_id: int,
+    payload: RFOStatusUpdateRequest | None = None,
+    session: Session = Depends(get_session),
+) -> RFOStatusUpdateResponse:
+    reason = payload.reason if payload else None
+    rfo, error = award_rfo(session, rfo_id, reason)
+    if error == "not_found":
+        raise HTTPException(status_code=404, detail="RFO not found")
+    if error == "invalid":
+        raise HTTPException(status_code=400, detail="Invalid RFO status transition")
+    return RFOStatusUpdateResponse(rfo_id=rfo.id, status=rfo.status, reason=rfo.status_reason)
+
+
+@router.post("/{rfo_id}/reopen", response_model=RFOStatusUpdateResponse)
+def reopen_rfo_route(
+    rfo_id: int,
+    payload: RFOStatusUpdateRequest | None = None,
+    session: Session = Depends(get_session),
+) -> RFOStatusUpdateResponse:
+    reason = payload.reason if payload else None
+    rfo, error = reopen_rfo(session, rfo_id, reason)
+    if error == "not_found":
+        raise HTTPException(status_code=404, detail="RFO not found")
+    if error == "invalid":
+        raise HTTPException(status_code=400, detail="Invalid RFO status transition")
+    return RFOStatusUpdateResponse(rfo_id=rfo.id, status=rfo.status, reason=rfo.status_reason)

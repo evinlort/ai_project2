@@ -1,7 +1,9 @@
+from datetime import datetime
+
 from sqlalchemy import func
 from sqlmodel import Session, select
 
-from intentbid.app.db.models import Offer, RFO
+from intentbid.app.db.models import AuditLog, Offer, RFO
 
 
 def create_rfo(session: Session, category: str, constraints: dict, preferences: dict) -> RFO:
@@ -21,3 +23,55 @@ def get_rfo_with_offers_count(session: Session, rfo_id: int) -> tuple[RFO | None
         select(func.count(Offer.id)).where(Offer.rfo_id == rfo_id)
     ).one()
     return rfo, offers_count
+
+
+def _log_rfo_action(
+    session: Session,
+    rfo_id: int,
+    action: str,
+    metadata: dict | None = None,
+) -> None:
+    audit = AuditLog(
+        entity_type="rfo",
+        entity_id=rfo_id,
+        action=action,
+        metadata_=metadata or {},
+        created_at=datetime.utcnow(),
+    )
+    session.add(audit)
+
+
+def _transition_rfo(
+    session: Session,
+    rfo_id: int,
+    from_statuses: set[str],
+    to_status: str,
+    action: str,
+    reason: str | None = None,
+) -> tuple[RFO | None, str | None]:
+    rfo = session.get(RFO, rfo_id)
+    if not rfo:
+        return None, "not_found"
+    if rfo.status not in from_statuses:
+        return rfo, "invalid"
+
+    rfo.status = to_status
+    rfo.status_reason = reason
+    session.add(rfo)
+    metadata = {"reason": reason} if reason else {}
+    _log_rfo_action(session, rfo_id, action, metadata)
+    session.commit()
+    session.refresh(rfo)
+    return rfo, None
+
+
+def close_rfo(session: Session, rfo_id: int, reason: str | None = None) -> tuple[RFO | None, str | None]:
+    return _transition_rfo(session, rfo_id, {"OPEN"}, "CLOSED", "close", reason)
+
+
+def award_rfo(session: Session, rfo_id: int, reason: str | None = None) -> tuple[RFO | None, str | None]:
+    return _transition_rfo(session, rfo_id, {"CLOSED"}, "AWARDED", "award", reason)
+
+
+def reopen_rfo(session: Session, rfo_id: int, reason: str | None = None) -> tuple[RFO | None, str | None]:
+    return _transition_rfo(session, rfo_id, {"CLOSED"}, "OPEN", "reopen", reason)

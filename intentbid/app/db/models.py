@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import Column, JSON
+from sqlalchemy import Column, JSON, String
 from sqlalchemy import Column, String
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -36,9 +36,24 @@ class RFO(SQLModel, table=True):
     constraints: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     preferences: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     status: str = Field(default="OPEN", index=True)
+    status_reason: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     offers: List["Offer"] = Relationship(back_populates="rfo")
+
+
+class AuditLog(SQLModel, table=True):
+    __tablename__ = "audit_log"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    entity_type: str = Field(index=True)
+    entity_id: int = Field(index=True)
+    action: str
+    metadata_: Dict[str, Any] = Field(
+        default_factory=dict,
+        sa_column=Column("metadata", JSON),
+    )
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 class Offer(SQLModel, table=True):
