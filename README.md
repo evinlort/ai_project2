@@ -132,6 +132,35 @@ Check current vendor (requires `X-API-Key`):
 curl http://localhost:8000/v1/vendors/me -H "X-API-Key: <api_key>"
 ```
 
+## Access control & onboarding
+
+- `POST /v1/vendors/keys` creates a new API key for the logged-in vendor; the raw key is returned once while the database stores a hashed copy and tracks `last_used_at`.
+- `POST /v1/vendors/keys/{key_id}/revoke` updates the key status to `revoked` and records `revoked_at` so rotated keys can be retired without affecting other tokens.
+- `POST /v1/vendors/webhooks` registers a webhook that receives signed `offer.created` events, while `EventOutbox` ensures retries, backoff, and `last_delivery_at` updates even if deliveries fail temporarily.
+- `GET /v1/vendors/onboarding/status` summarizes whether the vendor has an active API key and webhook so dashboards can highlight next steps.
+
+## Buyer access & ranking
+
+- `POST /v1/buyers/register` issues a buyer-scoped API key that must be sent as `X-Buyer-API-Key` on subsequent requests.
+- `GET /v1/buyers/me` mirrors the vendor `/me` so buyers can confirm their identity.
+- `GET /v1/buyers/rfo/{rfo_id}/ranking` returns every offer for the RFO together with `score` and the `explain` payload so buyers can inspect the ranking in detail.
+
+## RFO lifecycle & scoring
+
+- Status transitions follow the `OPEN -> CLOSED -> AWARDED` lifecycle with dedicated endpoints: `/rfo/{id}/close`, `/award`, and `/reopen` (idempotent checks prevent invalid transitions, and each change writes an `audit_log` entry with the optional reason).
+- `/v1/rfo/{id}/scoring` accepts a new `scoring_version` and per-component `weights`, making it possible to lock a version for auditability while tweaking individual RFO priorities.
+- `/v1/rfo/{id}/ranking/explain` shows the resolved `scoring_version`, per-component breakdown, and any active penalties so every decision is traceable on a per-RFO basis.
+
+## Validation & billing
+
+- Offer submission enforces `price_amount`, `delivery_eta_days`, and warranty/return ranges along with a configurable `max_offers_per_vendor_rfo` and `offer_cooldown_seconds` (set via environment or `.env` through `intentbid.app.core.config.settings`).
+- Vendors are matched to `Subscription` records and `PlanLimit` caps; creation of an offer records a `UsageEvent` and fails with `429 Plan limit exceeded` when the monthly cap is reached.
+
+## Notifications & webhooks
+
+- When an offer is created, `enqueue_event` writes a signed `offer.created` payload to `EventOutbox`; `dispatch_outbox` (e.g., from a worker or cron) polls pending events, signs them with the webhook secret, and retries with exponential backoff before moving to dead lettering.
+- Webhook deliveries include the `X-IntentBid-Signature` header so receivers can verify authenticity and vendors can manage retry metrics via `last_delivery_at`.
+
 ## Scoring logic
 
 The scoring model is intentionally transparent:
@@ -326,6 +355,35 @@ curl "http://localhost:8000/v1/rfo/1/best?top_k=3"
 ```bash
 curl http://localhost:8000/v1/vendors/me -H "X-API-Key: <api_key>"
 ```
+
+## Доступ и онбординг
+
+- `POST /v1/vendors/keys` создает новый API-ключ для текущего продавца; сырый ключ возвращается один раз, а в базе сохраняется хеш и обновляется `last_used_at`.
+- `POST /v1/vendors/keys/{key_id}/revoke` переводит ключ в статус `revoked` и фиксирует `revoked_at`, чтобы новые токены переключались без влияния на другие.
+- `POST /v1/vendors/webhooks` регистрирует webhook для событий `offer.created`, а `EventOutbox` обрабатывает ретраи, backoff и обновление `last_delivery_at` даже при временных отказах доставки.
+- `GET /v1/vendors/onboarding/status` показывает, есть ли у продавца активный API-ключ и webhook, чтобы UI мог подсказать следующий шаг.
+
+## Доступ покупателей и ранжирование
+
+- `POST /v1/buyers/register` выдает buyer-ключ, который нужно передавать в заголовке `X-Buyer-API-Key`.
+- `GET /v1/buyers/me` позволяет покупателям проверять свою сущность, аналогично `/v1/vendors/me`.
+- `GET /v1/buyers/rfo/{rfo_id}/ranking` возвращает все офферы по RFO вместе с `score` и `explain`, чтобы покупатель видел, как формируется ранжирование.
+
+## Жизненный цикл RFO и скоринг
+
+- Статусы RFO идут по цепочке `OPEN -> CLOSED -> AWARDED` через отдельные эндпоинты `/close`, `/award` и `/reopen`. Валидация допускает только корректные переходы, а каждый переход логируется в `audit_log` с указанием причины.
+- `/v1/rfo/{id}/scoring` позволяет назначать `scoring_version` и веса по компонентам (например, `w_price`), чтобы настройка однозначно фиксировалась и была обратимой.
+- `/v1/rfo/{id}/ranking/explain` отдает выбранную `scoring_version`, разбивку по компонентам и активные штрафы, поэтому решение легко сверить и отладить.
+
+## Валидация и биллинг
+
+- Отправка оффера проверяет `price_amount`, `delivery_eta_days`, а также гарантии и сроки возврата; валидация дополнительно следит за `max_offers_per_vendor_rfo` и `offer_cooldown_seconds`, которые настраиваются через `.env` (`intentbid.app.core.config.settings`).
+- Поставщики подписаны на `Subscription`, у каждой подписки есть `PlanLimit`. Если в текущем месяце уже исчерпан лимит, запрос возвращает `429 Plan limit exceeded`, а создание оффера фиксируется как `UsageEvent`.
+
+## Уведомления и webhook
+
+- После создания оффера `enqueue_event` пишет подписку в `EventOutbox`; `dispatch_outbox` (например, из фонового worker-а) забирает pending события, подписывает данные секретом webhook-а и пытается доставить повторно с backoff, прежде чем пометить как доставленное или dead-letter.
+- В заголовке `X-IntentBid-Signature` передается подпись содержимого, чтобы получатель мог проверить целостность, а продавец видит обновления `last_delivery_at` по каждому webhook-у.
 
 ## Логика скоринга
 

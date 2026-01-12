@@ -37,6 +37,14 @@
 - RFO detail: shows the RFO header (id, category, status, constraints, preferences), the "Submit an offer" form, and the "Existing offers" table with ID, price, ETA, warranty, and stock for all offers on that RFO.
 - My offers: shows your offers with RFO id, price, ETA, warranty, score, and status; `won` means the highest score for that RFO among current offers, `lost` means lower than the current best.
 
+## Extended workflows
+
+- Rotate vendor API keys with `POST /v1/vendors/keys` and retire individual keys through `POST /v1/vendors/keys/{key_id}/revoke`; `GET /v1/vendors/onboarding/status` reports which onboarding steps (API key, webhook) are complete.
+- Register webhook callbacks via `POST /v1/vendors/webhooks` and run `dispatch_outbox` from a worker/cron so signed `offer.created` events reach registered URLs with the `X-IntentBid-Signature` header.
+- Buyers `POST /v1/buyers/register` and include that key in `X-Buyer-API-Key` to call `GET /v1/buyers/rfo/{rfo_id}/ranking`, receiving every offer once again with `score` and `explain`.
+- Manage RFO states with `/v1/rfo/{id}/close`, `/award`, `/reopen` (each transition writes to `audit_log`), tune per-RFO `weights` and `scoring_version` via `/v1/rfo/{id}/scoring`, and examine the breakdown with `/v1/rfo/{rfo_id}/ranking/explain`.
+- Offer validation keeps `price_amount`, `delivery_eta_days`, warranty, and return days in range while enforcing `max_offers_per_vendor_rfo`/`offer_cooldown_seconds` (configured via `intentbid.app.core.config.settings`) and monthly plan caps driven by `PlanLimit`/`Subscription` with each offer recording a `UsageEvent`.
+
 ---
 
 # HOWTO
@@ -77,3 +85,11 @@
 - Открытые RFO: список RFO со статусом OPEN; карточка показывает номер RFO, категорию, дату создания и максимальный бюджет, есть ссылка на детали.
 - Детали RFO: заголовок RFO (id, category, status, constraints, preferences), форма "Submit an offer" и таблица "Existing offers" с ID, ценой, ETA, гарантией и наличием для всех офферов по этому RFO.
 - Мои офферы: таблица с RFO id, ценой, ETA, гарантией, скором и статусом; `won` означает лучший скор по этому RFO среди текущих офферов, `lost` означает более низкий скор.
+
+## Расширенные сценарии
+
+- Ротация API-ключей продавца через `POST /v1/vendors/keys` и отзыв отдельных ключей через `POST /v1/vendors/keys/{key_id}/revoke`; `GET /v1/vendors/onboarding/status` показывает, какие шаги (API-ключ, webhook) уже завершены.
+- Регистрируйте webhook-ы через `POST /v1/vendors/webhooks` и запускайте `dispatch_outbox` из фонового воркера/cron, чтобы подписанные события `offer.created` приходили на адреса с заголовком `X-IntentBid-Signature`.
+- Покупатели вызывают `POST /v1/buyers/register` и передают выдаваемый ключ в `X-Buyer-API-Key`, затем получают `GET /v1/buyers/rfo/{rfo_id}/ranking`, где снова видны все офферы с `score` и `explain`.
+- Управляйте статусами RFO через `/v1/rfo/{id}/close`, `/award`, `/reopen` (каждый переход пишется в `audit_log`), настраивайте `weights`/`scoring_version` через `/v1/rfo/{id}/scoring` и смотрите разбор через `/v1/rfo/{rfo_id}/ranking/explain`.
+- Валидация офферов проверяет `price_amount`, `delivery_eta_days`, гарантию и возврат, соблюдает `max_offers_per_vendor_rfo`/`offer_cooldown_seconds` из `intentbid.app.core.config.settings` и месячные лимиты из `PlanLimit`/`Subscription`, при этом каждый оффер записывается как `UsageEvent`.

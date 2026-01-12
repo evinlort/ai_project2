@@ -12,6 +12,9 @@ This file summarizes the completed MVP scope from WORK.md for this repository.
 - M6 Dashboard: Jinja2 vendor UI (login, RFO list, RFO detail + submit offer, offers with win/loss); RU UI available under `/ru`.
 - M7 Demo scripts: `intentbid/scripts/seed_demo.py` and `intentbid/scripts/vendor_simulator.py` for demo data and offer simulation.
 - M8 Tests + docs: pytest suite for API, scoring, dashboard, dockerfile, and start script; README documents setup, curl examples, and config.
+- M9 Access control + buyer ops: hashed vendor API keys, key rotation/revocation, webhook onboarding helpers, and a dedicated buyer register/ranking API with `X-Buyer-API-Key`.
+- M10 Lifecycle + scoring extensibility: RFO status transitions with audit trail plus `/scoring` and `/ranking/explain` endpoints that report scoring versions, weights, and penalty details.
+- M11 Limits, billing, and dispatch: per-vendor offer limits, cooldowns, and plan quotas enforced via `Subscription`/`PlanLimit` with `UsageEvent` tracking, plus webhook/outbox delivery with retries and signatures.
 
 ## Delivered capabilities
 - End-to-end RFO flow: vendor registration, RFO creation, offer submission, and best-offer ranking.
@@ -19,3 +22,6 @@ This file summarizes the completed MVP scope from WORK.md for this repository.
 - Postgres via docker-compose and SQLite by default for local development.
 - Database migrations, API documentation via OpenAPI, and basic vendor dashboard.
 - Demo workflow support (seed data + simulator) aligned with acceptance criteria.
+- Buyer-facing ranking API plus vendor key lifecycle tooling that keeps authentication hashes sealed.
+- RFO lifecycle awareness (close/award/reopen) with audit logs plus scoring configuration, explain output, and weight/version controls.
+- Billing-ready protections (plan limits, cooldowns, usage events) and webhook/outbox delivery with retry/backoff, signature headers, and last-delivery tracking.
