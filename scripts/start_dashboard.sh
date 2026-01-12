@@ -32,8 +32,26 @@ wait_for_db() {
   return 1
 }
 
+run_migrations() {
+  local output
+
+  if ! output=$("${compose_cmd[@]}" run --rm api alembic upgrade head 2>&1); then
+    if echo "$output" | grep -qi "DuplicateTable\\|already exists"; then
+      printf '%s\n' "$output"
+      printf '%s\n' "Existing schema detected; stamping Alembic head." >&2
+      "${compose_cmd[@]}" run --rm api alembic stamp head
+      return 0
+    fi
+
+    printf '%s\n' "$output" >&2
+    return 1
+  fi
+
+  printf '%s\n' "$output"
+}
+
 "${compose_cmd[@]}" up --build -d db
 wait_for_db
 "${compose_cmd[@]}" build api
-"${compose_cmd[@]}" run --rm api alembic upgrade head
+run_migrations
 "${compose_cmd[@]}" up --build api
