@@ -30,6 +30,14 @@ IntentBid is a minimal Request for Offer (RFO) bidding service. Buyers post RFOs
 
 ## Quick start (Docker + Postgres)
 
+Start everything (db + migrations + API) with one command:
+
+```bash
+./scripts/start_dashboard.sh
+```
+
+Or start services manually:
+
 Start services:
 
 ```bash
@@ -216,6 +224,14 @@ IntentBid — это минимальный сервис торгов по Reque
 - `intentbid/tests/*`: тесты API + скоринга.
 
 ## Быстрый старт (Docker + Postgres)
+
+Запуск всего одной командой (db + migrations + API):
+
+```bash
+./scripts/start_dashboard.sh
+```
+
+Или вручную:
 
 Запустите сервисы:
 
