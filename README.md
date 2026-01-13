@@ -194,19 +194,6 @@ A minimal UI for vendors (Jinja2 templates):
 - Confirm identity: `GET /v1/buyers/me` with `X-Buyer-API-Key`
 - Ranking transcript: `GET /v1/buyers/rfo/{id}/ranking` to inspect every offer + explain
 
-### Dashboard links (Russian)
-
-- Login: [http://localhost:8000/ru/dashboard/login](http://localhost:8000/ru/dashboard/login)
-- Open RFO list: [http://localhost:8000/ru/dashboard/rfos](http://localhost:8000/ru/dashboard/rfos)
-- RFO detail + submit offer: [http://localhost:8000/ru/dashboard/rfos/<id>](http://localhost:8000/ru/dashboard/rfos/<id>)
-- Your offers + win/loss: [http://localhost:8000/ru/dashboard/offers](http://localhost:8000/ru/dashboard/offers)
-
-### Панель покупателя (API)
-
-- Регистрация покупателя: `POST /v1/buyers/register`
-- Подтверждение профиля: `GET /v1/buyers/me` через `X-Buyer-API-Key`
-- Ранжирование: `GET /v1/buyers/rfo/{id}/ranking` — список офферов с `score` и `explain`
-
 You can also pass `?api_key=...` to `/dashboard/rfos` if you want a direct link; the API key is stored in a cookie for convenience.
 
 ### Dashboard API reference (English)
@@ -231,29 +218,6 @@ After you log in through `/dashboard/login`, the new `/dashboard/apis` page disp
 - `POST /v1/rfo/{id}/reopen` → `/dashboard/apis/rfo-reopen`
 - `POST /v1/rfo/{id}/scoring` → `/dashboard/apis/rfo-scoring`
 - `GET /v1/rfo/{id}/ranking/explain` → `/dashboard/apis/rfo-ranking-explain`
-
-### Dashboard API reference (Russian)
-
-Тот же набор эндпоинтов доступен в русской панеле через `/ru/dashboard/apis`. Каждый элемент списка ведет на `/ru/dashboard/apis/<slug>` и показывает метод, маршрут, заголовок авторизации, пример curl и примечания на русском языке.
-
-- `POST /v1/vendors/register` — регистрация продавца → `/ru/dashboard/apis/vendor-registration`
-- `POST /v1/vendors/keys` — новые ключи → `/ru/dashboard/apis/vendor-keys`
-- `POST /v1/vendors/keys/{key_id}/revoke` — отзыв ключа → `/ru/dashboard/apis/vendor-revoke-key`
-- `POST /v1/vendors/webhooks` — регистрация webhook → `/ru/dashboard/apis/vendor-webhooks`
-- `GET /v1/vendors/onboarding/status` — статус онбординга → `/ru/dashboard/apis/vendor-onboarding`
-- `GET /v1/vendors/me` — профиль продавца → `/ru/dashboard/apis/vendor-me`
-- `POST /v1/buyers/register` — регистрация покупателя → `/ru/dashboard/apis/buyer-registration`
-- `GET /v1/buyers/me` — профиль покупателя → `/ru/dashboard/apis/buyer-me`
-- `GET /v1/buyers/rfo/{rfo_id}/ranking` — ранжирование → `/ru/dashboard/apis/buyer-ranking`
-- `POST /v1/rfo` — создание RFO → `/ru/dashboard/apis/rfo-create`
-- `GET /v1/rfo/{id}` — детали RFO → `/ru/dashboard/apis/rfo-detail`
-- `GET /v1/rfo/{id}/best` — лучшие офферы → `/ru/dashboard/apis/rfo-best`
-- `POST /v1/offers` — отправить оффер → `/ru/dashboard/apis/offer-create`
-- `POST /v1/rfo/{id}/close` — закрыть RFO → `/ru/dashboard/apis/rfo-close`
-- `POST /v1/rfo/{id}/award` — выбрать победителя → `/ru/dashboard/apis/rfo-award`
-- `POST /v1/rfo/{id}/reopen` — повторно открыть → `/ru/dashboard/apis/rfo-reopen`
-- `POST /v1/rfo/{id}/scoring` — обновить скоринг → `/ru/dashboard/apis/rfo-scoring`
-- `GET /v1/rfo/{id}/ranking/explain` — explain ранжирования → `/ru/dashboard/apis/rfo-ranking-explain`
 
 ## Demo data
 
