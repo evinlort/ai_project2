@@ -45,6 +45,30 @@
 - Manage RFO states with `/v1/rfo/{id}/close`, `/award`, `/reopen` (each transition writes to `audit_log`), tune per-RFO `weights` and `scoring_version` via `/v1/rfo/{id}/scoring`, and examine the breakdown with `/v1/rfo/{rfo_id}/ranking/explain`.
 - Offer validation keeps `price_amount`, `delivery_eta_days`, warranty, and return days in range while enforcing `max_offers_per_vendor_rfo`/`offer_cooldown_seconds` (configured via `intentbid.app.core.config.settings`) and monthly plan caps driven by `PlanLimit`/`Subscription` with each offer recording a `UsageEvent`.
 
+## Project setup
+
+### Tech stack & layout
+- FastAPI + SQLModel drive the API layer (`intentbid/app/main.py`, `intentbid/app/api/*`) while Alembic keeps the DB schema in sync (`intentbid/app/db/migrations`).
+- Jinja2 templates power the vendor dashboard, scoring logic lives in `intentbid/app/core/scoring.py`, and models (Vendor/RFO/Offer) sit in `intentbid/app/db/models.py`.
+- Utility scripts such as `intentbid/scripts/seed_demo.py` and `intentbid/scripts/vendor_simulator.py` help populate demo data and exercise the service.
+
+### Quick start (Docker + Postgres)
+- Run `./scripts/start_dashboard.sh` to bring up Postgres, migrations, and the API in one go.
+- Alternatively, `docker-compose up --build` boots the stack, then `docker-compose run --rm api alembic upgrade head` creates the tables.
+- API: `http://localhost:8000`; docs: `http://localhost:8000/docs`; Postgres: `localhost:15432` (user/password/db `intentbid`).
+
+### Local development (SQLite)
+- Install dependencies with `pip install -e .`, apply migrations via `alembic upgrade head`, and start the API with `uvicorn intentbid.app.main:app --reload`.
+- The default SQLite file is `intentbid.db` in the repo root unless `DATABASE_URL` overrides it.
+
+### Configuration & scripts
+- `DATABASE_URL` (default `sqlite:///./intentbid.db`), `SECRET_KEY` (hashes API keys), and `ENV` (`dev` enables SQL echo) control the runtime.
+- Seed demo vendors, RFOs, and offers with `python intentbid/scripts/seed_demo.py` (also writes `scripts/demo_vendors.json`).
+- Simulate vendors posting offers via `python intentbid/scripts/vendor_simulator.py --api-url http://localhost:8000 --mode mixed --limit 3` (also available through `docker-compose run --rm api`).
+
+### Testing
+- Install dev dependencies with `pip install ".[dev]"` and run `pytest` to exercise the API and scoring suites.
+
 ---
 
 # HOWTO
@@ -93,3 +117,27 @@
 - Покупатели вызывают `POST /v1/buyers/register` и передают выдаваемый ключ в `X-Buyer-API-Key`, затем получают `GET /v1/buyers/rfo/{rfo_id}/ranking`, где снова видны все офферы с `score` и `explain`.
 - Управляйте статусами RFO через `/v1/rfo/{id}/close`, `/award`, `/reopen` (каждый переход пишется в `audit_log`), настраивайте `weights`/`scoring_version` через `/v1/rfo/{id}/scoring` и смотрите разбор через `/v1/rfo/{rfo_id}/ranking/explain`.
 - Валидация офферов проверяет `price_amount`, `delivery_eta_days`, гарантию и возврат, соблюдает `max_offers_per_vendor_rfo`/`offer_cooldown_seconds` из `intentbid.app.core.config.settings` и месячные лимиты из `PlanLimit`/`Subscription`, при этом каждый оффер записывается как `UsageEvent`.
+
+## Настройка проекта
+
+### Стек и структура
+- FastAPI + SQLModel строят API (`intentbid/app/main.py`, `intentbid/app/api/*`), миграции обрабатываются Alembic (`intentbid/app/db/migrations`).
+- Панель продавца реализована на Jinja2, логика скоринга — в `intentbid/app/core/scoring.py`, модели (Vendor/RFO/Offer) — в `intentbid/app/db/models.py`.
+- Вспомогательные скрипты `intentbid/scripts/seed_demo.py` и `intentbid/scripts/vendor_simulator.py` заполняют демо-данные и моделируют поведение продавцов.
+
+### Быстрый старт (Docker + Postgres)
+- С помощью `./scripts/start_dashboard.sh` поднимаются Postgres, миграции и API одновременно.
+- Или `docker-compose up --build` + `docker-compose run --rm api alembic upgrade head` для ручного запуска.
+- API: `http://localhost:8000`, документация: `http://localhost:8000/docs`, Postgres: `localhost:15432` (user/password/db `intentbid`).
+
+### Локальная разработка (SQLite)
+- Установите зависимости `pip install -e .`, примените миграции `alembic upgrade head`, запустите сервис `uvicorn intentbid.app.main:app --reload`.
+- SQLite-файл по умолчанию — `intentbid.db` в корне репозитория, если `DATABASE_URL` не переопределён.
+
+### Конфигурация и скрипты
+- Переменные `DATABASE_URL` (по умолчанию `sqlite:///./intentbid.db`), `SECRET_KEY` (хеширует API-ключи) и `ENV` (`dev` включает SQL echo) управляют окружением.
+- Заполните демо-данные `python intentbid/scripts/seed_demo.py` (создаёт `scripts/demo_vendors.json`).
+- Промоделируйте отправку офферов `python intentbid/scripts/vendor_simulator.py --api-url http://localhost:8000 --mode mixed --limit 3` (можно запускать через `docker-compose run --rm api`).
+
+### Тесты
+- Установите dev-зависимости `pip install ".[dev]"` и запустите `pytest`, чтобы проверить API и логики скоринга.
