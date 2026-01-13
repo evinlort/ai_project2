@@ -1,0 +1,90 @@
+{% extends "buyer/base.html" %}
+
+{% block content %}
+<section class="card">
+  <h2>Buyer scoring</h2>
+  <p class="muted">Inspect the full ranking and scoring breakdown.</p>
+  <form method="get">
+    <div class="grid two">
+      <div class="stack">
+        <label for="rfo_id">RFO id</label>
+        <input id="rfo_id" name="rfo_id" type="number" min="1" step="1" value="{{ rfo_id or '' }}" required />
+      </div>
+      <div class="stack">
+        <label for="buyer_api_key">Buyer API key</label>
+        <input
+          id="buyer_api_key"
+          name="buyer_api_key"
+          type="text"
+          placeholder="buyer_live_..."
+          value="{{ buyer_api_key or '' }}"
+        />
+      </div>
+    </div>
+    <button type="submit">Load scoring</button>
+  </form>
+  <p class="muted" style="margin-top: 16px;">
+    Register a buyer via <code>POST /v1/buyers/register</code> to get a key.
+  </p>
+</section>
+
+{% if error %}
+<section class="card" style="margin-top: 20px;">
+  <p class="notice error">{{ error }}</p>
+</section>
+{% endif %}
+
+{% if rfo %}
+<section class="card" style="margin-top: 24px;">
+  <span class="pill">RFO #{{ rfo.id }}</span>
+  <h3>{{ rfo.category }}</h3>
+  {% if buyer %}
+  <p class="muted">Viewing as {{ buyer.name }}</p>
+  {% endif %}
+  {% if offers %}
+  <table style="margin-top: 16px;">
+    <thead>
+      <tr>
+        <th>Offer</th>
+        <th>Vendor</th>
+        <th>Score</th>
+        <th>Price</th>
+        <th>Delivery</th>
+        <th>Warranty</th>
+        <th>Explain</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in offers %}
+      <tr>
+        <td>#{{ row.offer.id }}</td>
+        <td>#{{ row.offer.vendor_id }}</td>
+        <td>{{ row.score | round(3) }}</td>
+        <td>{{ row.offer.price_amount }} {{ row.offer.currency }}</td>
+        <td>{{ row.offer.delivery_eta_days }} days</td>
+        <td>{{ row.offer.warranty_months }} months</td>
+        <td>
+          <div class="stack">
+            <div><strong>Components</strong></div>
+            {% for key, value in row.explain.get("components", {}).items() %}
+            <div>{{ key }}: {{ value | round(3) }}</div>
+            {% endfor %}
+            <div><strong>Weights</strong></div>
+            {% for key, value in row.explain.get("weights", {}).items() %}
+            <div>{{ key }}: {{ value | round(3) }}</div>
+            {% endfor %}
+            {% if row.explain.get("penalties") %}
+            <div><strong>Penalties</strong>: {{ row.explain.get("penalties") | join(", ") }}</div>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted" style="margin-top: 16px;">No offers yet for this RFO.</p>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

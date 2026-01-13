@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
 
 from intentbid.app.core.observability import MetricsCollector, request_middleware
+from intentbid.app.api.routes_buyer_dashboard import router as buyer_dashboard_router
 from intentbid.app.api.routes_buyers import router as buyers_router
 from intentbid.app.api.routes_dashboard import router as dashboard_router
 from intentbid.app.api.routes_offers import router as offers_router
@@ -20,6 +21,7 @@ app.include_router(buyers_router)
 app.include_router(vendors_router)
 app.include_router(rfo_router)
 app.include_router(offers_router)
+app.include_router(buyer_dashboard_router)
 app.include_router(dashboard_router)
 app.include_router(ru_router)
 

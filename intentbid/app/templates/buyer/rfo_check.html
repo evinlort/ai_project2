@@ -1,0 +1,56 @@
+{% extends "buyer/base.html" %}
+
+{% block content %}
+<section class="card">
+  <h2>RFO check</h2>
+  <p class="muted">Look up an RFO and review its current status.</p>
+  <form method="get">
+    <label for="rfo_id">RFO id</label>
+    <input id="rfo_id" name="rfo_id" type="number" min="1" step="1" value="{{ rfo_id or '' }}" required />
+    <button type="submit">Check RFO</button>
+  </form>
+</section>
+
+{% if error %}
+<section class="card" style="margin-top: 20px;">
+  <p class="notice error">{{ error }}</p>
+</section>
+{% endif %}
+
+{% if rfo %}
+<section class="grid two" style="margin-top: 24px;">
+  <article class="card">
+    <span class="pill">RFO #{{ rfo.id }}</span>
+    <h3>{{ rfo.category }}</h3>
+    <p class="muted">Status: {{ rfo.status }}</p>
+    <p class="muted">Created: {{ rfo.created_at.strftime('%Y-%m-%d') }}</p>
+    <p class="muted">Offers received: {{ offers_count }}</p>
+  </article>
+  <article class="card">
+    <h3>Constraints</h3>
+    <div class="stack">
+      {% for key, value in rfo.constraints.items() %}
+      <div><strong>{{ key }}</strong>: {{ value }}</div>
+      {% endfor %}
+    </div>
+    <h3 style="margin-top: 16px;">Preferences</h3>
+    <div class="stack">
+      {% for key, value in rfo.preferences.items() %}
+      <div><strong>{{ key }}</strong>: {{ value }}</div>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="card" style="margin-top: 24px;">
+  <h3>Next steps</h3>
+  <p class="muted">Jump into ranking and scoring views for this request.</p>
+  <div class="stack">
+    <a href="/buyer/rfos/best?rfo_id={{ rfo.id }}">Best offers</a>
+    <a href="/buyer/rfos/scoring?rfo_id={{ rfo.id }}{% if buyer_api_key %}&buyer_api_key={{ buyer_api_key }}{% endif %}">
+      Buyer scoring
+    </a>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

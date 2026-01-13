@@ -1,0 +1,64 @@
+{% extends "buyer/base.html" %}
+
+{% block content %}
+<section class="card">
+  <h2>Best offers</h2>
+  <p class="muted">Review the top-ranked offers for a single RFO.</p>
+  <form method="get">
+    <div class="grid two">
+      <div class="stack">
+        <label for="rfo_id">RFO id</label>
+        <input id="rfo_id" name="rfo_id" type="number" min="1" step="1" value="{{ rfo_id or '' }}" required />
+      </div>
+      <div class="stack">
+        <label for="top_k">Top offers</label>
+        <input id="top_k" name="top_k" type="number" min="1" max="50" step="1" value="{{ top_k }}" />
+      </div>
+    </div>
+    <button type="submit">Show offers</button>
+  </form>
+</section>
+
+{% if error %}
+<section class="card" style="margin-top: 20px;">
+  <p class="notice error">{{ error }}</p>
+</section>
+{% endif %}
+
+{% if rfo %}
+<section class="card" style="margin-top: 24px;">
+  <span class="pill">RFO #{{ rfo.id }}</span>
+  <h3>{{ rfo.category }}</h3>
+  {% if offers %}
+  <table style="margin-top: 16px;">
+    <thead>
+      <tr>
+        <th>Offer</th>
+        <th>Vendor</th>
+        <th>Score</th>
+        <th>Price</th>
+        <th>Delivery</th>
+        <th>Warranty</th>
+        <th>Stock</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in offers %}
+      <tr>
+        <td>#{{ row.offer.id }}</td>
+        <td>#{{ row.offer.vendor_id }}</td>
+        <td>{{ row.score | round(3) }}</td>
+        <td>{{ row.offer.price_amount }} {{ row.offer.currency }}</td>
+        <td>{{ row.offer.delivery_eta_days }} days</td>
+        <td>{{ row.offer.warranty_months }} months</td>
+        <td>{{ "Yes" if row.offer.stock else "No" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted" style="margin-top: 16px;">No offers yet for this RFO.</p>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}
