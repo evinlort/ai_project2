@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card">
+  <span class="pill">{{ doc.method }}</span>
+  <h2>{{ doc.title }}</h2>
+  <p>{{ doc.description }}</p>
+
+  <dl style="margin-top: 16px; margin-bottom: 16px;">
+    <dt>Endpoint</dt>
+    <dd><code>{{ doc.method }} {{ doc.path }}</code></dd>
+    <dt>Authentication</dt>
+    <dd>{{ doc.auth }}</dd>
+    {% if doc.notes %}
+    <dt>Notes</dt>
+    <dd>{{ doc.notes }}</dd>
+    {% endif %}
+  </dl>
+
+  <h3>Example</h3>
+  <pre><code>{{ doc.example }}</code></pre>
+</section>
+{% endblock %}

@@ -27,3 +27,32 @@ def test_dashboard_rfos_lists_open_rfos(client):
 
     assert response.status_code == 200
     assert rfo_payload["category"] in response.text
+
+
+def test_dashboard_api_list_requires_api_key(client):
+    response = client.get("/dashboard/apis", allow_redirects=False)
+
+    assert response.status_code in {302, 303}
+    assert response.headers["location"].endswith("/dashboard/login")
+
+
+def test_dashboard_api_list_shows_endpoints(client):
+    vendor_response = client.post("/v1/vendors/register", json={"name": "Acme"})
+    api_key = vendor_response.json()["api_key"]
+
+    response = client.get(f"/dashboard/apis?api_key={api_key}")
+
+    assert response.status_code == 200
+    assert "Vendor registration" in response.text
+    assert "/v1/vendors/register" in response.text
+
+
+def test_dashboard_api_detail_page(client):
+    vendor_response = client.post("/v1/vendors/register", json={"name": "Acme"})
+    api_key = vendor_response.json()["api_key"]
+
+    response = client.get(f"/dashboard/apis/vendor-registration?api_key={api_key}")
+
+    assert response.status_code == 200
+    assert "Vendor registration" in response.text
+    assert "POST /v1/vendors/register" in response.text

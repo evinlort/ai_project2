@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card">
+  <span class="pill">API reference</span>
+  <h2>Live API reference</h2>
+  <p class="muted">
+    Each API call has a dedicated dashboard page with the method, endpoint, authentication details,
+    and an example request.
+  </p>
+</section>
+
+<section class="grid two" style="margin-top: 24px;">
+  {% for doc in api_docs %}
+  <article class="card">
+    <span class="pill">{{ doc.method }}</span>
+    <h3>{{ doc.title }}</h3>
+    <p class="muted" style="margin-bottom: 8px;">{{ doc.path }}</p>
+    <p>{{ doc.description }}</p>
+    <p class="muted">Auth: {{ doc.auth }}</p>
+    <a href="/dashboard/apis/{{ doc.slug }}{% if api_key %}?api_key={{ api_key }}{% endif %}">Open details</a>
+  </article>
+  {% endfor %}
+</section>
+{% endblock %}

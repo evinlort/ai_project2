@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 
+from intentbid.app.api.api_docs import get_api_doc, list_api_docs
 from intentbid.app.core.schemas import OfferCreate
 from intentbid.app.core.scoring import score_offer
 from intentbid.app.db.models import Offer, RFO
@@ -189,6 +190,46 @@ def dashboard_offers(request: Request, session: Session = Depends(get_session)):
             "vendor": vendor,
             "api_key": api_key,
         },
+    )
+    if api_key and api_key != request.cookies.get("api_key"):
+        response.set_cookie("api_key", api_key, httponly=True)
+    return response
+
+
+@router.get("/dashboard/apis", response_class=HTMLResponse)
+def dashboard_api_list(request: Request, session: Session = Depends(get_session)):
+    vendor, api_key = _get_vendor(session, request)
+    if not vendor:
+        return RedirectResponse(url="/ru/dashboard/login", status_code=303)
+
+    api_docs = list_api_docs(language="ru")
+    response = templates.TemplateResponse(
+        "api_list.html",
+        {"request": request, "api_docs": api_docs, "api_key": api_key},
+    )
+    if api_key and api_key != request.cookies.get("api_key"):
+        response.set_cookie("api_key", api_key, httponly=True)
+    return response
+
+
+@router.get("/dashboard/apis/{slug}", response_class=HTMLResponse)
+def dashboard_api_detail(
+    request: Request,
+    slug: str,
+    session: Session = Depends(get_session),
+):
+    vendor, api_key = _get_vendor(session, request)
+    if not vendor:
+        return RedirectResponse(url="/ru/dashboard/login", status_code=303)
+
+    try:
+        doc = get_api_doc(slug, language="ru")
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+    response = templates.TemplateResponse(
+        "api_detail.html",
+        {"request": request, "doc": doc, "api_key": api_key},
     )
     if api_key and api_key != request.cookies.get("api_key"):
         response.set_cookie("api_key", api_key, httponly=True)
