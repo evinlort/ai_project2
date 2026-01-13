@@ -188,12 +188,24 @@ A minimal UI for vendors (Jinja2 templates):
 - RFO detail + submit offer: [http://localhost:8000/dashboard/rfos/<id>](http://localhost:8000/dashboard/rfos/<id>)
 - Your offers + win/loss: [http://localhost:8000/dashboard/offers](http://localhost:8000/dashboard/offers)
 
+### Buyer dashboard (API)
+
+- Register buyer: `POST /v1/buyers/register` (returns buyer key)
+- Confirm identity: `GET /v1/buyers/me` with `X-Buyer-API-Key`
+- Ranking transcript: `GET /v1/buyers/rfo/{id}/ranking` to inspect every offer + explain
+
 ### Dashboard links (Russian)
 
 - Login: [http://localhost:8000/ru/dashboard/login](http://localhost:8000/ru/dashboard/login)
 - Open RFO list: [http://localhost:8000/ru/dashboard/rfos](http://localhost:8000/ru/dashboard/rfos)
 - RFO detail + submit offer: [http://localhost:8000/ru/dashboard/rfos/<id>](http://localhost:8000/ru/dashboard/rfos/<id>)
 - Your offers + win/loss: [http://localhost:8000/ru/dashboard/offers](http://localhost:8000/ru/dashboard/offers)
+
+### Панель покупателя (API)
+
+- Регистрация покупателя: `POST /v1/buyers/register`
+- Подтверждение профиля: `GET /v1/buyers/me` через `X-Buyer-API-Key`
+- Ранжирование: `GET /v1/buyers/rfo/{id}/ranking` — список офферов с `score` и `explain`
 
 You can also pass `?api_key=...` to `/dashboard/rfos` if you want a direct link; the API key is stored in a cookie for convenience.
 
