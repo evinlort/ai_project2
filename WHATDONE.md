@@ -1,27 +1,23 @@
 # WHATDONE
 
-This file summarizes the completed MVP scope from WORK.md for this repository.
+This file summarizes the completed work for the IntentBid MVP in this repository.
 
 ## Milestones completed
 - M0 Bootstrap: FastAPI app with `/health`, Dockerfile, docker-compose, and `scripts/start_dashboard.sh` for local startup.
-- M1 DB + migrations: SQLModel models for Vendor, RFO, Offer plus an Alembic initial migration.
-- M2 Vendor registration + auth: `/v1/vendors/register` issues an API key (stored hashed); `X-API-Key` auth and `/v1/vendors/me` are implemented.
-- M3 RFO API: create RFOs and fetch details with offers count.
-- M4 Offer API: submit offers for OPEN RFOs with vendor auth enforcement.
-- M5 Ranking endpoint: `/v1/rfo/{id}/best` returns sorted top offers with scoring explain output.
-- M6 Dashboard: Jinja2 vendor UI (login, RFO list, RFO detail + submit offer, offers with win/loss); RU UI available under `/ru`.
+- M1 DB + migrations: SQLModel models for vendors, buyers, RFOs, offers, webhooks/outbox, billing tables, and Alembic migrations.
+- M2 Vendor registration + auth: `/v1/vendors/register` issues hashed API keys; `X-API-Key` auth, `/v1/vendors/me`, key rotation/revocation, onboarding status.
+- M3 RFO API: create RFOs, fetch details with offer counts, and manage status transitions with audit logging.
+- M4 Offer API: submit offers for OPEN RFOs with validation (price/ETA/warranty/return), per-RFO caps, cooldowns, plan limits, and usage tracking.
+- M5 Ranking endpoints: `/v1/rfo/{id}/best` returns top offers with explain output; buyer ranking returns every offer with explain data.
+- M6 Dashboards: vendor Jinja2 UI (login, RFO list, RFO detail + submit offer, offers with win/loss) plus RU UI; buyer console for RFO create/check/best/scoring.
 - M7 Demo scripts: `intentbid/scripts/seed_demo.py` and `intentbid/scripts/vendor_simulator.py` for demo data and offer simulation.
-- M8 Tests + docs: pytest suite for API, scoring, dashboard, dockerfile, and start script; README documents setup, curl examples, and config.
-- M9 Access control + buyer ops: hashed vendor API keys, key rotation/revocation, webhook onboarding helpers, and a dedicated buyer register/ranking API with `X-Buyer-API-Key`.
-- M10 Lifecycle + scoring extensibility: RFO status transitions with audit trail plus `/scoring` and `/ranking/explain` endpoints that report scoring versions, weights, and penalty details.
-- M11 Limits, billing, and dispatch: per-vendor offer limits, cooldowns, and plan quotas enforced via `Subscription`/`PlanLimit` with `UsageEvent` tracking, plus webhook/outbox delivery with retries and signatures.
+- M8 Tests + docs: pytest suite for API, scoring, dashboards, buyer flows, and SDK; README/HOWTO updates; dashboard API reference pages; Postman collection; Python SDK.
+- M9 Webhooks + dispatch: vendor webhook registration, outbox delivery with retries, signatures, and last-delivery tracking.
+- M10 Scoring extensibility: scoring config updates and ranking explain endpoints with version/weight/penalty details.
+- M11 Observability + ops: `/metrics` and `/ready` endpoints, correlation IDs + request logging, CI workflow, and template packaging in `pyproject.toml`.
 
 ## Delivered capabilities
-- End-to-end RFO flow: vendor registration, RFO creation, offer submission, and best-offer ranking.
-- Rule-based scoring with penalties and weighted components as described in WORK.md.
-- Postgres via docker-compose and SQLite by default for local development.
-- Database migrations, API documentation via OpenAPI, and basic vendor dashboard.
-- Demo workflow support (seed data + simulator) aligned with acceptance criteria.
-- Buyer-facing ranking API plus vendor key lifecycle tooling that keeps authentication hashes sealed.
-- RFO lifecycle awareness (close/award/reopen) with audit logs plus scoring configuration, explain output, and weight/version controls.
-- Billing-ready protections (plan limits, cooldowns, usage events) and webhook/outbox delivery with retry/backoff, signature headers, and last-delivery tracking.
+- End-to-end vendor and buyer RFO lifecycle with transparent scoring and ranking.
+- Buyer and vendor authentication flows with hashed API keys and dashboard cookie helpers.
+- Operational guardrails: plan limits, per-RFO caps, cooldowns, usage events, and webhook dispatch.
+- Documentation/tooling: API docs pages under `/dashboard/apis` and `/ru/dashboard/apis`, Python SDK client, Postman collection, and setup guides.
