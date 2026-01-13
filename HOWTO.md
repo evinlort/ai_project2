@@ -14,8 +14,11 @@
 5. Choose the winning offer based on the scores.
    - What you will see: scores and winners update as new offers arrive.
 
-### Dashboard views
-- There is no buyer dashboard. The only web UI is the vendor dashboard described below.
+### Buyer dashboard
+- Create an RFO: open `/buyer/rfos/new` to submit constraints and weights.
+- Check an RFO: use `/buyer/rfos/check` to see status and offer counts.
+- Best offers: visit `/buyer/rfos/best` to review top-ranked offers.
+- Buyer scoring: open `/buyer/rfos/scoring` with a buyer API key to see full ranking details.
 
 ## Vendor walkthrough
 
@@ -49,7 +52,7 @@
 
 ### Tech stack & layout
 - FastAPI + SQLModel drive the API layer (`intentbid/app/main.py`, `intentbid/app/api/*`) while Alembic keeps the DB schema in sync (`intentbid/app/db/migrations`).
-- Jinja2 templates power the vendor dashboard, scoring logic lives in `intentbid/app/core/scoring.py`, and models (Vendor/RFO/Offer) sit in `intentbid/app/db/models.py`.
+- Jinja2 templates power the vendor and buyer dashboards, scoring logic lives in `intentbid/app/core/scoring.py`, and models (Vendor/RFO/Offer) sit in `intentbid/app/db/models.py`.
 - Utility scripts such as `intentbid/scripts/seed_demo.py` and `intentbid/scripts/vendor_simulator.py` help populate demo data and exercise the service.
 
 ### Quick start (Docker + Postgres)
@@ -87,8 +90,11 @@
 5. Выберите победителя по скорингу.
    - Что вы увидите: очки и победители обновляются по мере поступления новых офферов.
 
-### Представления панели
-- Отдельной панели для покупателя нет. Единственный веб-интерфейс - панель продавца, она описана ниже.
+### Панель покупателя
+- Создание RFO: `/buyer/rfos/new` для ввода ограничений и весов.
+- Проверка RFO: `/buyer/rfos/check` для статуса и количества офферов.
+- Лучшие офферы: `/buyer/rfos/best` для просмотра топовых предложений.
+- Скоринг покупателя: `/buyer/rfos/scoring` с API-ключом покупателя для полного разбора.
 
 ## Руководство для продавца
 
@@ -122,7 +128,7 @@
 
 ### Стек и структура
 - FastAPI + SQLModel строят API (`intentbid/app/main.py`, `intentbid/app/api/*`), миграции обрабатываются Alembic (`intentbid/app/db/migrations`).
-- Панель продавца реализована на Jinja2, логика скоринга — в `intentbid/app/core/scoring.py`, модели (Vendor/RFO/Offer) — в `intentbid/app/db/models.py`.
+- Панели продавца и покупателя реализованы на Jinja2, логика скоринга — в `intentbid/app/core/scoring.py`, модели (Vendor/RFO/Offer) — в `intentbid/app/db/models.py`.
 - Вспомогательные скрипты `intentbid/scripts/seed_demo.py` и `intentbid/scripts/vendor_simulator.py` заполняют демо-данные и моделируют поведение продавцов.
 
 ### Быстрый старт (Docker + Postgres)

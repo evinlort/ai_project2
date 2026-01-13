@@ -1,6 +1,6 @@
 # IntentBid MVP
 
-IntentBid is a minimal Request for Offer (RFO) bidding service. Buyers post RFOs with constraints and weighted preferences; vendors register, submit offers, and the system scores and ranks them with a transparent rule-based formula. A small vendor dashboard is included for browsing open RFOs and tracking offers.
+IntentBid is a minimal Request for Offer (RFO) bidding service. Buyers post RFOs with constraints and weighted preferences; vendors register, submit offers, and the system scores and ranks them with a transparent rule-based formula. Vendor and buyer dashboards are included for creating RFOs, browsing open requests, and tracking offers.
 
 ## How it works
 
@@ -8,14 +8,14 @@ IntentBid is a minimal Request for Offer (RFO) bidding service. Buyers post RFOs
 - Buyer creates an RFO with constraints and preference weights.
 - Vendor submits offers for an OPEN RFO using `X-API-Key`.
 - `/v1/rfo/{id}/best` returns the top offers with a score breakdown.
-- Dashboard exposes login and RFO/offer views for vendors.
+- Dashboards expose buyer RFO creation/checks plus vendor offer tracking views.
 
 ## Tech stack
 
 - FastAPI + SQLModel for the API and data layer.
 - Postgres via docker-compose; SQLite by default for local dev.
 - Alembic migrations in `intentbid/app/db/migrations`.
-- Jinja2 templates for the dashboard.
+- Jinja2 templates for the dashboards.
 - Pytest for tests.
 
 ## Project layout
@@ -187,6 +187,15 @@ A minimal UI for vendors (Jinja2 templates):
 - Open RFO list: [http://localhost:8000/dashboard/rfos](http://localhost:8000/dashboard/rfos)
 - RFO detail + submit offer: [http://localhost:8000/dashboard/rfos/<id>](http://localhost:8000/dashboard/rfos/<id>)
 - Your offers + win/loss: [http://localhost:8000/dashboard/offers](http://localhost:8000/dashboard/offers)
+
+### Buyer dashboard (UI)
+
+- Create an RFO: [http://localhost:8000/buyer/rfos/new](http://localhost:8000/buyer/rfos/new)
+- Check an RFO: [http://localhost:8000/buyer/rfos/check](http://localhost:8000/buyer/rfos/check)
+- Best offers: [http://localhost:8000/buyer/rfos/best](http://localhost:8000/buyer/rfos/best)
+- Buyer scoring: [http://localhost:8000/buyer/rfos/scoring](http://localhost:8000/buyer/rfos/scoring)
+
+Buyer scoring expects a buyer API key from `POST /v1/buyers/register`.
 
 ### Buyer dashboard (API)
 
