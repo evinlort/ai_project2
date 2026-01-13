@@ -458,6 +458,13 @@ curl http://localhost:8000/v1/vendors/me -H "X-API-Key: <api_key>"
 
 Можно также передать `?api_key=...` в `/dashboard/rfos` для прямой ссылки; для удобства ключ сохраняется в cookie.
 
+### Панель покупателя (UI)
+
+- Создание RFO: [http://localhost:8000/buyer/rfos/new](http://localhost:8000/buyer/rfos/new)
+- Проверка RFO: [http://localhost:8000/buyer/rfos/check](http://localhost:8000/buyer/rfos/check)
+- Лучшие офферы: [http://localhost:8000/buyer/rfos/best](http://localhost:8000/buyer/rfos/best)
+- Скоринг покупателя: [http://localhost:8000/buyer/rfos/scoring](http://localhost:8000/buyer/rfos/scoring)
+
 ### Панель покупателя (API)
 
 - Регистрация покупателя: `POST /v1/buyers/register` (возвращает ключ покупателя)

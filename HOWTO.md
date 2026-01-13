@@ -15,23 +15,23 @@
    - What you will see: scores and winners update as new offers arrive.
 
 ### Buyer dashboard
-- Create an RFO: open `/buyer/rfos/new` to submit constraints and weights.
-- Check an RFO: use `/buyer/rfos/check` to see status and offer counts.
-- Best offers: visit `/buyer/rfos/best` to review top-ranked offers.
-- Buyer scoring: open `/buyer/rfos/scoring` with a buyer API key to see full ranking details.
+- Create an RFO: [http://localhost:8000/buyer/rfos/new](http://localhost:8000/buyer/rfos/new) to submit constraints and weights.
+- Check an RFO: [http://localhost:8000/buyer/rfos/check](http://localhost:8000/buyer/rfos/check) to see status and offer counts.
+- Best offers: [http://localhost:8000/buyer/rfos/best](http://localhost:8000/buyer/rfos/best) to review top-ranked offers.
+- Buyer scoring: [http://localhost:8000/buyer/rfos/scoring](http://localhost:8000/buyer/rfos/scoring) with a buyer API key to see full ranking details.
 
 ## Vendor walkthrough
 
 ### Step-by-step
 1. Register with `POST /v1/vendors/register` and store the API key.
    - What you will see: `vendor_id` and a one-time `api_key` in the response.
-2. Open the vendor login page at `/dashboard/login` (Russian UI: `/ru/dashboard/login`).
+2. Open the vendor login page at [http://localhost:8000/dashboard/login](http://localhost:8000/dashboard/login) (Russian UI: [http://localhost:8000/ru/dashboard/login](http://localhost:8000/ru/dashboard/login)).
    - What you will see: an API key field and an error message for invalid keys; on success the key is stored in a cookie.
-3. Browse open RFOs at `/dashboard/rfos` (or add `?api_key=...`).
+3. Browse open RFOs at [http://localhost:8000/dashboard/rfos](http://localhost:8000/dashboard/rfos) (or add `?api_key=...`).
    - What you will see: cards for each OPEN RFO with the ID, category, created date, and budget max; if you are not logged in you are redirected to the login page.
 4. Open an RFO detail page and submit an offer.
    - What you will see: the RFO status, constraints, and preferences; a form for price, currency, delivery ETA, warranty months, return days, and stock; after submit you return to the same page.
-5. Track results on `/dashboard/offers`.
+5. Track results on [http://localhost:8000/dashboard/offers](http://localhost:8000/dashboard/offers).
    - What you will see: a table of your offers with score and a `won` or `lost` status per RFO.
 
 ### Dashboard views explained
@@ -91,23 +91,23 @@
    - Что вы увидите: очки и победители обновляются по мере поступления новых офферов.
 
 ### Панель покупателя
-- Создание RFO: `/buyer/rfos/new` для ввода ограничений и весов.
-- Проверка RFO: `/buyer/rfos/check` для статуса и количества офферов.
-- Лучшие офферы: `/buyer/rfos/best` для просмотра топовых предложений.
-- Скоринг покупателя: `/buyer/rfos/scoring` с API-ключом покупателя для полного разбора.
+- Создание RFO: [http://localhost:8000/buyer/rfos/new](http://localhost:8000/buyer/rfos/new) для ввода ограничений и весов.
+- Проверка RFO: [http://localhost:8000/buyer/rfos/check](http://localhost:8000/buyer/rfos/check) для статуса и количества офферов.
+- Лучшие офферы: [http://localhost:8000/buyer/rfos/best](http://localhost:8000/buyer/rfos/best) для просмотра топовых предложений.
+- Скоринг покупателя: [http://localhost:8000/buyer/rfos/scoring](http://localhost:8000/buyer/rfos/scoring) с API-ключом покупателя для полного разбора.
 
 ## Руководство для продавца
 
 ### Пошагово
 1. Зарегистрируйтесь через `POST /v1/vendors/register` и сохраните API-ключ.
    - Что вы увидите: `vendor_id` и одноразовый `api_key` в ответе.
-2. Откройте страницу входа `/dashboard/login` (русский UI: `/ru/dashboard/login`).
+2. Откройте страницу входа [http://localhost:8000/dashboard/login](http://localhost:8000/dashboard/login) (русский UI: [http://localhost:8000/ru/dashboard/login](http://localhost:8000/ru/dashboard/login)).
    - Что вы увидите: поле для API-ключа и сообщение об ошибке при неверном ключе; при успехе ключ сохраняется в cookie.
-3. Откройте список открытых RFO по адресу `/dashboard/rfos` (или добавьте `?api_key=...`).
+3. Откройте список открытых RFO по адресу [http://localhost:8000/dashboard/rfos](http://localhost:8000/dashboard/rfos) (или добавьте `?api_key=...`).
    - Что вы увидите: карточки всех RFO со статусом OPEN с ID, категорией, датой создания и максимальным бюджетом; без входа произойдет редирект на страницу логина.
 4. Откройте страницу RFO и отправьте оффер.
    - Что вы увидите: статус RFO, constraints и preferences; форму для цены, валюты, срока доставки, гарантии, срока возврата и наличия; после отправки вы вернетесь на эту же страницу.
-5. Отслеживайте результат на `/dashboard/offers`.
+5. Отслеживайте результат на [http://localhost:8000/dashboard/offers](http://localhost:8000/dashboard/offers).
    - Что вы увидите: таблицу своих офферов со скором и статусом `won` или `lost` для каждого RFO.
 
 ### Что означают страницы панели
