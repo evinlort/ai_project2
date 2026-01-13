@@ -29,6 +29,9 @@ dev = [
 where = ["."]
 include = ["intentbid*"]
 
+[tool.setuptools.package-data]
+"intentbid.app" = ["templates/**/*.html"]
+
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["intentbid/tests"]
