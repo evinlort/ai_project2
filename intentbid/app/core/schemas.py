@@ -81,6 +81,7 @@ class RFOCreateResponse(BaseModel):
 
 class RFOStatusUpdateRequest(BaseModel):
     reason: str | None = None
+    offer_id: int | None = None
 
 
 class RFOStatusUpdateResponse(BaseModel):

@@ -118,6 +118,9 @@ class RFO(SQLModel, table=True):
     preferences: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     status: str = Field(default="OPEN", index=True)
     status_reason: Optional[str] = None
+    awarded_offer_id: Optional[int] = Field(
+        default=None, foreign_key="offer.id", index=True
+    )
     scoring_version: str = Field(default="v1")
     weights: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -150,6 +153,8 @@ class Offer(SQLModel, table=True):
     warranty_months: int
     return_days: int
     stock: bool
+    status: str = Field(default="submitted", index=True)
+    is_awarded: bool = Field(default=False, index=True)
     metadata_: Dict[str, Any] = Field(
         default_factory=dict,
         sa_column=Column("metadata", JSON),

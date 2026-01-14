@@ -12,3 +12,4 @@
 - Backfill new request columns from existing constraints: Added a legacy-constraints scoring test and an idempotent migration to copy budget/deadline values into the new columns.
 - Expose new request fields through schemas: Added schema/validation coverage, expanded RFO create/detail schemas, and wired API creation/detail responses to the new columns.
 - Sync request columns with constraints in the service layer: Added constraint-sync tests and a service helper that merges explicit budget/deadline inputs into constraints while storing resolved column values.
+- Track awarded offers in the data model: Added award tracking tests plus model/migration updates for awarded_offer_id and offer status/is_awarded fields, and wired award logic to set the winner.

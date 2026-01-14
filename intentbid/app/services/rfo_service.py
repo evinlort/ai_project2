@@ -122,8 +122,39 @@ def close_rfo(session: Session, rfo_id: int, reason: str | None = None) -> tuple
     return _transition_rfo(session, rfo_id, {"OPEN"}, "CLOSED", "close", reason)
 
 
-def award_rfo(session: Session, rfo_id: int, reason: str | None = None) -> tuple[RFO | None, str | None]:
-    return _transition_rfo(session, rfo_id, {"CLOSED"}, "AWARDED", "award", reason)
+def award_rfo(
+    session: Session,
+    rfo_id: int,
+    reason: str | None = None,
+    offer_id: int | None = None,
+) -> tuple[RFO | None, str | None]:
+    rfo = session.get(RFO, rfo_id)
+    if not rfo:
+        return None, "not_found"
+    if rfo.status not in {"CLOSED"}:
+        return rfo, "invalid"
+
+    if offer_id is not None:
+        offer = session.get(Offer, offer_id)
+        if not offer or offer.rfo_id != rfo_id:
+            return rfo, "invalid_offer"
+        offer.status = "awarded"
+        offer.is_awarded = True
+        session.add(offer)
+        rfo.awarded_offer_id = offer_id
+
+    rfo.status = "AWARDED"
+    rfo.status_reason = reason
+    session.add(rfo)
+
+    metadata = {"reason": reason} if reason else {}
+    if offer_id is not None:
+        metadata["offer_id"] = offer_id
+    _log_rfo_action(session, rfo_id, "award", metadata)
+
+    session.commit()
+    session.refresh(rfo)
+    return rfo, None
 
 
 def reopen_rfo(session: Session, rfo_id: int, reason: str | None = None) -> tuple[RFO | None, str | None]:

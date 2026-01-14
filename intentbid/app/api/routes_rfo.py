@@ -202,11 +202,14 @@ def award_rfo_route(
     session: Session = Depends(get_session),
 ) -> RFOStatusUpdateResponse:
     reason = payload.reason if payload else None
-    rfo, error = award_rfo(session, rfo_id, reason)
+    offer_id = payload.offer_id if payload else None
+    rfo, error = award_rfo(session, rfo_id, reason, offer_id=offer_id)
     if error == "not_found":
         raise HTTPException(status_code=404, detail="RFO not found")
     if error == "invalid":
         raise HTTPException(status_code=400, detail="Invalid RFO status transition")
+    if error == "invalid_offer":
+        raise HTTPException(status_code=400, detail="Invalid offer for this RFO")
     return RFOStatusUpdateResponse(rfo_id=rfo.id, status=rfo.status, reason=rfo.status_reason)
 
 
