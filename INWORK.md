@@ -9,3 +9,4 @@
 - Add tests for buyer-owned request creation: Added coverage for buyer-attached and anonymous RFO creation using the buyer API key header and direct DB assertions.
 - Add buyer_id to the RFO model: Added buyer ownership fields/relationships, a migration for the nullable FK/index, and optional buyer attachment in create_rfo routes/services.
 - Add explicit buyer request fields for listing and UI: Added persistence tests plus new nullable RFO columns and indexes for title, summary, budget, currency, delivery deadlines, quantity, location, and expires_at.
+- Backfill new request columns from existing constraints: Added a legacy-constraints scoring test and an idempotent migration to copy budget/deadline values into the new columns.
