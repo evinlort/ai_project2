@@ -42,6 +42,14 @@ def create_rfo_route(
         payload.constraints,
         payload.preferences,
         buyer_id=buyer_id,
+        title=payload.title,
+        summary=payload.summary,
+        budget_max=payload.budget_max,
+        currency=payload.currency,
+        delivery_deadline_days=payload.delivery_deadline_days,
+        quantity=payload.quantity,
+        location=payload.location,
+        expires_at=payload.expires_at,
     )
     return RFOCreateResponse(rfo_id=rfo.id, status=rfo.status)
 
@@ -58,6 +66,14 @@ def get_rfo_route(
     return RFODetailResponse(
         id=rfo.id,
         category=rfo.category,
+        title=rfo.title,
+        summary=rfo.summary,
+        budget_max=rfo.budget_max,
+        currency=rfo.currency,
+        delivery_deadline_days=rfo.delivery_deadline_days,
+        quantity=rfo.quantity,
+        location=rfo.location,
+        expires_at=rfo.expires_at,
         constraints=rfo.constraints,
         preferences=rfo.preferences,
         status=rfo.status,

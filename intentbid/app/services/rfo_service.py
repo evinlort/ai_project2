@@ -12,12 +12,28 @@ def create_rfo(
     constraints: dict,
     preferences: dict,
     buyer_id: int | None = None,
+    title: str | None = None,
+    summary: str | None = None,
+    budget_max: float | None = None,
+    currency: str | None = None,
+    delivery_deadline_days: int | None = None,
+    quantity: int | None = None,
+    location: str | None = None,
+    expires_at: datetime | None = None,
 ) -> RFO:
     rfo = RFO(
         category=category,
         constraints=constraints,
         preferences=preferences,
         buyer_id=buyer_id,
+        title=title,
+        summary=summary,
+        budget_max=budget_max,
+        currency=currency,
+        delivery_deadline_days=delivery_deadline_days,
+        quantity=quantity,
+        location=location,
+        expires_at=expires_at,
     )
     session.add(rfo)
     session.commit()

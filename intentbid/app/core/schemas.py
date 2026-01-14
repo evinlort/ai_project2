@@ -64,6 +64,14 @@ class RFOCreate(BaseModel):
     category: str
     constraints: Dict[str, Any]
     preferences: Dict[str, Any]
+    title: str | None = None
+    summary: str | None = None
+    budget_max: float | None = Field(default=None, gt=0)
+    currency: str | None = None
+    delivery_deadline_days: int | None = Field(default=None, gt=0)
+    quantity: int | None = Field(default=None, gt=0)
+    location: str | None = None
+    expires_at: datetime | None = None
 
 
 class RFOCreateResponse(BaseModel):
@@ -95,6 +103,14 @@ class RFOScoringUpdateResponse(BaseModel):
 class RFODetailResponse(BaseModel):
     id: int
     category: str
+    title: str | None = None
+    summary: str | None = None
+    budget_max: float | None = None
+    currency: str | None = None
+    delivery_deadline_days: int | None = None
+    quantity: int | None = None
+    location: str | None = None
+    expires_at: datetime | None = None
     constraints: Dict[str, Any]
     preferences: Dict[str, Any]
     status: str
