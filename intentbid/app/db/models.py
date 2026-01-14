@@ -13,6 +13,7 @@ class Vendor(SQLModel, table=True):
 
     offers: List["Offer"] = Relationship(back_populates="vendor")
     api_keys: List["VendorApiKey"] = Relationship(back_populates="vendor")
+    profile: Optional["VendorProfile"] = Relationship(back_populates="vendor")
 
 
 class VendorApiKey(SQLModel, table=True):
@@ -39,6 +40,19 @@ class VendorWebhook(SQLModel, table=True):
     is_active: bool = Field(default=True, index=True)
     last_delivery_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class VendorProfile(SQLModel, table=True):
+    __tablename__ = "vendor_profile"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    vendor_id: int = Field(foreign_key="vendor.id", index=True)
+    categories: List[str] = Field(default_factory=list, sa_column=Column(JSON))
+    regions: List[str] = Field(default_factory=list, sa_column=Column(JSON))
+    lead_time_days: Optional[int] = Field(default=None, index=True)
+    min_order_value: Optional[float] = Field(default=None, index=True)
+
+    vendor: Optional[Vendor] = Relationship(back_populates="profile")
 
 
 class EventOutbox(SQLModel, table=True):
