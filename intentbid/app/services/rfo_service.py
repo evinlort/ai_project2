@@ -6,6 +6,28 @@ from sqlmodel import Session, select
 from intentbid.app.db.models import AuditLog, Offer, RFO
 
 
+def _sync_request_fields(
+    constraints: dict | None,
+    budget_max: float | None,
+    delivery_deadline_days: int | None,
+) -> tuple[dict, float | None, int | None]:
+    merged_constraints = dict(constraints or {})
+
+    resolved_budget_max = budget_max
+    if resolved_budget_max is None:
+        resolved_budget_max = merged_constraints.get("budget_max")
+    else:
+        merged_constraints["budget_max"] = resolved_budget_max
+
+    resolved_deadline = delivery_deadline_days
+    if resolved_deadline is None:
+        resolved_deadline = merged_constraints.get("delivery_deadline_days")
+    else:
+        merged_constraints["delivery_deadline_days"] = resolved_deadline
+
+    return merged_constraints, resolved_budget_max, resolved_deadline
+
+
 def create_rfo(
     session: Session,
     category: str,
@@ -21,16 +43,20 @@ def create_rfo(
     location: str | None = None,
     expires_at: datetime | None = None,
 ) -> RFO:
+    merged_constraints, resolved_budget_max, resolved_deadline = _sync_request_fields(
+        constraints, budget_max, delivery_deadline_days
+    )
+
     rfo = RFO(
         category=category,
-        constraints=constraints,
+        constraints=merged_constraints,
         preferences=preferences,
         buyer_id=buyer_id,
         title=title,
         summary=summary,
-        budget_max=budget_max,
+        budget_max=resolved_budget_max,
         currency=currency,
-        delivery_deadline_days=delivery_deadline_days,
+        delivery_deadline_days=resolved_deadline,
         quantity=quantity,
         location=location,
         expires_at=expires_at,
