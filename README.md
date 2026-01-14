@@ -2,6 +2,21 @@
 
 IntentBid is a minimal Request for Offer (RFO) bidding service. Buyers post RFOs with constraints and weighted preferences; vendors register, submit offers, and the system scores and ranks them with a transparent rule-based formula. Vendor and buyer dashboards are included for creating RFOs, browsing open requests, and tracking offers.
 
+## Aggregator overview
+
+IntentBid acts as an aggregator: buyers publish buyer requests (RFOs), and vendors respond with vendor offers.
+
+Glossary:
+
+- Buyer request = RFO
+- Vendor offer = Offer
+
+Flow:
+
+- Buyer posts a request -> vendors submit offers -> ranking returns the best offers.
+
+The UI calls the same API endpoints used by automation.
+
 ## How it works
 
 - Vendor registers and receives a one-time API key (stored hashed).
@@ -265,6 +280,21 @@ pytest
 # IntentBid MVP
 
 IntentBid — это минимальный сервис торгов по Request for Offer (RFO). Покупатели публикуют RFO с ограничениями и весами предпочтений; продавцы регистрируются, отправляют офферы, а система считает и ранжирует их по прозрачной rule-based формуле. Включена простая панель продавца для просмотра открытых RFO и отслеживания офферов.
+
+## Обзор агрегатора
+
+IntentBid работает как агрегатор: покупатели публикуют запросы покупателя (RFO), а продавцы отвечают офферами продавца.
+
+Глоссарий:
+
+- Запрос покупателя = RFO
+- Оффер продавца = Offer
+
+Поток:
+
+- Покупатель публикует запрос -> продавцы отправляют офферы -> ранжирование возвращает лучшие офферы.
+
+UI использует те же API эндпоинты, что и автоматизация.
 
 ## Как это работает
 
