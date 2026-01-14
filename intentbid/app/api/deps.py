@@ -31,3 +31,16 @@ def require_buyer(
     if not buyer:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
     return buyer
+
+
+def optional_buyer(
+    api_key: str | None = Header(default=None, alias="X-Buyer-API-Key"),
+    session: Session = Depends(get_session),
+) -> Buyer | None:
+    if not api_key:
+        return None
+
+    buyer = get_buyer_by_api_key(session, api_key)
+    if not buyer:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
+    return buyer

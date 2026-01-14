@@ -66,7 +66,7 @@ def buyer_rfo_create_submit(
         "w_delivery": w_delivery,
         "w_warranty": w_warranty,
     }
-    rfo = create_rfo(session, category, constraints, preferences)
+    rfo = create_rfo(session, category, constraints, preferences, buyer_id=None)
     return RedirectResponse(url=f"/buyer/rfos/check?rfo_id={rfo.id}", status_code=303)
 
 

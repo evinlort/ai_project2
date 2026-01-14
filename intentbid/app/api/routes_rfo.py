@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session
 
+from intentbid.app.api.deps import optional_buyer
 from intentbid.app.core.schemas import (
     BestOffer,
     BestOffersResponse,
@@ -31,9 +32,17 @@ router = APIRouter(prefix="/v1/rfo", tags=["rfo"])
 @router.post("", response_model=RFOCreateResponse)
 def create_rfo_route(
     payload: RFOCreate,
+    buyer=Depends(optional_buyer),
     session: Session = Depends(get_session),
 ) -> RFOCreateResponse:
-    rfo = create_rfo(session, payload.category, payload.constraints, payload.preferences)
+    buyer_id = buyer.id if buyer else None
+    rfo = create_rfo(
+        session,
+        payload.category,
+        payload.constraints,
+        payload.preferences,
+        buyer_id=buyer_id,
+    )
     return RFOCreateResponse(rfo_id=rfo.id, status=rfo.status)
 
 

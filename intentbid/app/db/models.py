@@ -85,6 +85,7 @@ class Buyer(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     api_keys: List["BuyerApiKey"] = Relationship(back_populates="buyer")
+    rfos: List["RFO"] = Relationship(back_populates="buyer")
 
 
 class BuyerApiKey(SQLModel, table=True):
@@ -103,6 +104,7 @@ class BuyerApiKey(SQLModel, table=True):
 
 class RFO(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    buyer_id: Optional[int] = Field(default=None, foreign_key="buyer.id", index=True)
     category: str
     constraints: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     preferences: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
@@ -113,6 +115,7 @@ class RFO(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     offers: List["Offer"] = Relationship(back_populates="rfo")
+    buyer: Optional[Buyer] = Relationship(back_populates="rfos")
 
 
 class AuditLog(SQLModel, table=True):

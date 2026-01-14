@@ -6,8 +6,19 @@ from sqlmodel import Session, select
 from intentbid.app.db.models import AuditLog, Offer, RFO
 
 
-def create_rfo(session: Session, category: str, constraints: dict, preferences: dict) -> RFO:
-    rfo = RFO(category=category, constraints=constraints, preferences=preferences)
+def create_rfo(
+    session: Session,
+    category: str,
+    constraints: dict,
+    preferences: dict,
+    buyer_id: int | None = None,
+) -> RFO:
+    rfo = RFO(
+        category=category,
+        constraints=constraints,
+        preferences=preferences,
+        buyer_id=buyer_id,
+    )
     session.add(rfo)
     session.commit()
     session.refresh(rfo)

@@ -7,3 +7,4 @@
 # Buyer request data model and ownership
 
 - Add tests for buyer-owned request creation: Added coverage for buyer-attached and anonymous RFO creation using the buyer API key header and direct DB assertions.
+- Add buyer_id to the RFO model: Added buyer ownership fields/relationships, a migration for the nullable FK/index, and optional buyer attachment in create_rfo routes/services.
