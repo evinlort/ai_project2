@@ -45,3 +45,4 @@
 # Automation, docs, and demo data
 
 - Extend the SDK with buyer and request list methods: Added SDK tests and new client methods for buyer registration, request listing, buyer-scoped lists, and rankings.
+- Extend the SDK with vendor profile and offer list methods: Added SDK tests and client helpers for vendor profiles, vendor offer listings, and match endpoints.

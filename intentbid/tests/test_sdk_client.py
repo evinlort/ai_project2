@@ -129,3 +129,64 @@ def test_sdk_get_buyer_ranking_sets_buyer_key_header():
     client = IntentBidClient(base_url="https://example.com", transport=transport)
     response = client.get_buyer_ranking(5, "buyer_test")
     assert response["rfo_id"] == 5
+
+
+def test_sdk_get_vendor_profile_sets_api_key_header():
+    def handler(request):
+        assert request.method == "GET"
+        assert request.url.path == "/v1/vendors/me/profile"
+        assert request.headers["X-API-Key"] == "sk_test"
+        return httpx.Response(200, json={"categories": [], "regions": []})
+
+    transport = httpx.MockTransport(handler)
+    client = IntentBidClient(base_url="https://example.com", api_key="sk_test", transport=transport)
+    response = client.get_vendor_profile()
+    assert response["categories"] == []
+
+
+def test_sdk_update_vendor_profile_sets_api_key_header():
+    def handler(request):
+        assert request.method == "PUT"
+        assert request.url.path == "/v1/vendors/me/profile"
+        assert request.headers["X-API-Key"] == "sk_test"
+        payload = httpx.Response(200, content=request.content).json()
+        assert payload["categories"] == ["sneakers"]
+        return httpx.Response(200, json=payload)
+
+    transport = httpx.MockTransport(handler)
+    client = IntentBidClient(base_url="https://example.com", api_key="sk_test", transport=transport)
+    response = client.update_vendor_profile(
+        {
+            "categories": ["sneakers"],
+            "regions": ["EU"],
+            "lead_time_days": 5,
+            "min_order_value": 1000,
+        }
+    )
+    assert response["categories"] == ["sneakers"]
+
+
+def test_sdk_list_vendor_offers_sets_api_key_header():
+    def handler(request):
+        assert request.method == "GET"
+        assert request.url.path == "/v1/vendors/me/offers"
+        assert request.headers["X-API-Key"] == "sk_test"
+        return httpx.Response(200, json={"items": [], "total": 0, "limit": 20, "offset": 0})
+
+    transport = httpx.MockTransport(handler)
+    client = IntentBidClient(base_url="https://example.com", api_key="sk_test", transport=transport)
+    response = client.list_vendor_offers()
+    assert response["items"] == []
+
+
+def test_sdk_list_matches_sets_api_key_header():
+    def handler(request):
+        assert request.method == "GET"
+        assert request.url.path == "/v1/vendors/me/matches"
+        assert request.headers["X-API-Key"] == "sk_test"
+        return httpx.Response(200, json={"items": [], "total": 0, "limit": 20, "offset": 0})
+
+    transport = httpx.MockTransport(handler)
+    client = IntentBidClient(base_url="https://example.com", api_key="sk_test", transport=transport)
+    response = client.list_matches()
+    assert response["items"] == []

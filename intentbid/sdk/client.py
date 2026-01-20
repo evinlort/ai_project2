@@ -77,8 +77,62 @@ class IntentBidClient:
         response.raise_for_status()
         return response.json()
 
+    def get_vendor_profile(self) -> dict[str, Any]:
+        headers = self._auth_headers()
+        response = self._client.get("/v1/vendors/me/profile", headers=headers)
+        response.raise_for_status()
+        return response.json()
+
+    def update_vendor_profile(self, payload: dict[str, Any]) -> dict[str, Any]:
+        headers = self._auth_headers()
+        response = self._client.put("/v1/vendors/me/profile", json=payload, headers=headers)
+        response.raise_for_status()
+        return response.json()
+
+    def list_vendor_offers(
+        self,
+        *,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> dict[str, Any]:
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+
+        headers = self._auth_headers()
+        response = self._client.get(
+            "/v1/vendors/me/offers",
+            params=params or None,
+            headers=headers,
+        )
+        response.raise_for_status()
+        return response.json()
+
     def get_best_offers(self, rfo_id: int, *, top_k: int = 3) -> dict[str, Any]:
         response = self._client.get(f"/v1/rfo/{rfo_id}/best", params={"top_k": top_k})
+        response.raise_for_status()
+        return response.json()
+
+    def list_matches(
+        self,
+        *,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> dict[str, Any]:
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+
+        headers = self._auth_headers()
+        response = self._client.get(
+            "/v1/vendors/me/matches",
+            params=params or None,
+            headers=headers,
+        )
         response.raise_for_status()
         return response.json()
 
