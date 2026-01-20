@@ -46,3 +46,4 @@
 
 - Extend the SDK with buyer and request list methods: Added SDK tests and new client methods for buyer registration, request listing, buyer-scoped lists, and rankings.
 - Extend the SDK with vendor profile and offer list methods: Added SDK tests and client helpers for vendor profiles, vendor offer listings, and match endpoints.
+- Update the Postman collection with new endpoints: Added buyer/vendor list, profile, match, ranking, and update requests with expanded buyer request payload examples.
