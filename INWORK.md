@@ -38,3 +38,4 @@
 - Add buyer registration page and API key helper: Added buyer registration test coverage plus a /buyer/register route that calls the buyer API and renders the key with a cookie.
 - Update buyer request creation UI to call the API with new fields: Added explicit-field coverage for buyer form submissions, moved creation to UiApiClient, and expanded the form for title, summary, budget, quantity, location, and deadlines.
 - Add buyer "My requests" UI using the buyer list endpoint: Added buyer list test coverage plus a /buyer/rfos page that pulls buyer-owned requests, offer counts, and best-offer links from the API.
+- Update buyer check, best offers, and scoring pages to use API endpoints: Added invalid-key coverage and switched buyer detail, best-offer, and ranking pages to API calls with error messaging from responses.

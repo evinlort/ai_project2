@@ -180,4 +180,21 @@ def test_buyer_scoring_page_shows_rankings(client):
     assert response.status_code == 200
     assert "Buyer scoring" in response.text
     assert "Score" in response.text
+
+
+def test_buyer_scoring_page_rejects_invalid_key(client):
+    rfo_payload = {
+        "category": "sneakers",
+        "constraints": {"budget_max": 120, "size": 42, "delivery_deadline_days": 3},
+        "preferences": {"w_price": 0.6, "w_delivery": 0.3, "w_warranty": 0.1},
+    }
+    rfo_response = client.post("/v1/rfo", json=rfo_payload)
+    rfo_id = rfo_response.json()["rfo_id"]
+
+    response = client.get(
+        f"/buyer/rfos/scoring?rfo_id={rfo_id}&buyer_api_key=buyer_invalid"
+    )
+
+    assert response.status_code == 200
+    assert "Invalid buyer API key" in response.text
 from urllib.parse import parse_qs, urlparse
