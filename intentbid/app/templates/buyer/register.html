@@ -1,0 +1,16 @@
+{% extends "buyer/base.html" %}
+
+{% block content %}
+<section class="card">
+  <span class="pill">Buyer access</span>
+  <h2>Buyer API key</h2>
+  <p class="muted">Use this key to view rankings and manage your buyer requests.</p>
+  <div class="notice">
+    <code>{{ buyer_api_key }}</code>
+  </div>
+  <p class="muted" style="margin-top: 16px;">
+    Next steps: create a buyer request at <code>/buyer/rfos/new</code> and keep this key for scoring
+    and rankings.
+  </p>
+</section>
+{% endblock %}

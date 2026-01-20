@@ -5,6 +5,16 @@ def test_buyer_rfo_create_page(client):
     assert "Create a new RFO" in response.text
 
 
+def test_buyer_register_page_sets_api_key_cookie(client):
+    response = client.get("/buyer/register")
+
+    assert response.status_code == 200
+    assert "Buyer API key" in response.text
+    buyer_api_key = response.cookies.get("buyer_api_key")
+    assert buyer_api_key
+    assert buyer_api_key in response.text
+
+
 def test_buyer_rfo_create_redirects_to_check(client):
     form_data = {
         "category": "sneakers",

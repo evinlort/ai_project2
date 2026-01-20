@@ -35,3 +35,4 @@
 - Update vendor request detail page to use API data: Added dashboard detail tests (EN/RU) and switched detail pages to fetch request and vendor offers via UiApiClient with vendor-only filtering.
 - Update vendor offer submission to call the API and show validation errors: Added a dashboard test for invalid offers, moved EN/RU submit handlers to UiApiClient, and rendered API error messages in the detail forms.
 - Update vendor offers page to use API results and award status: Added offers page test coverage and switched EN/RU dashboards to list offers via the API with request status, award state, and won/lost styling.
+- Add buyer registration page and API key helper: Added buyer registration test coverage plus a /buyer/register route that calls the buyer API and renders the key with a cookie.

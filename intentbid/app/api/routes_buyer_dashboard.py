@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import httpx
 from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -31,6 +32,23 @@ def _get_buyer(session: Session, request: Request, form_api_key: str | None = No
 
     buyer = get_buyer_by_api_key(session, api_key)
     return buyer, api_key
+
+
+@router.get("/register", response_class=HTMLResponse)
+async def buyer_register(request: Request):
+    transport = httpx.ASGITransport(app=request.app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/v1/buyers/register", json={"name": "Buyer"})
+        response.raise_for_status()
+        payload = response.json()
+
+    buyer_api_key = payload["api_key"]
+    response = templates.TemplateResponse(
+        "buyer/register.html",
+        {"request": request, "buyer_api_key": buyer_api_key},
+    )
+    response.set_cookie("buyer_api_key", buyer_api_key, httponly=True)
+    return response
 
 
 @router.get("/rfos/new", response_class=HTMLResponse)
