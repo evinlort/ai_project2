@@ -7,11 +7,9 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 
-from intentbid.app.core.schemas import OfferCreate
 from intentbid.app.core.scoring import score_offer
 from intentbid.app.db.models import Offer, RFO
 from intentbid.app.db.session import get_session
-from intentbid.app.services.offer_service import create_offer
 from intentbid.app.ui.api_client import UiApiClient
 from intentbid.app.api.api_docs import get_api_doc, list_api_docs
 
@@ -166,23 +164,64 @@ async def dashboard_submit_offer(
     if not vendor:
         return RedirectResponse(url="/dashboard/login", status_code=303)
 
-    rfo = session.get(RFO, rfo_id)
-    if not rfo:
-        raise HTTPException(status_code=404, detail="RFO not found")
-    if rfo.status != "OPEN":
-        return RedirectResponse(url=f"/dashboard/rfos/{rfo_id}", status_code=303)
+    payload = {
+        "rfo_id": rfo_id,
+        "price_amount": price_amount,
+        "currency": currency,
+        "delivery_eta_days": delivery_eta_days,
+        "warranty_months": warranty_months,
+        "return_days": return_days,
+        "stock": bool(stock),
+        "metadata": {},
+    }
 
-    payload = OfferCreate(
-        rfo_id=rfo_id,
-        price_amount=price_amount,
-        currency=currency,
-        delivery_eta_days=delivery_eta_days,
-        warranty_months=warranty_months,
-        return_days=return_days,
-        stock=bool(stock),
-        metadata={},
-    )
-    create_offer(session, vendor["vendor_id"], payload)
+    transport = httpx.ASGITransport(app=request.app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        api = UiApiClient(client)
+        try:
+            await api.submit_offer(resolved_key, payload)
+        except httpx.HTTPStatusError as exc:
+            try:
+                error_detail = exc.response.json().get("detail")
+            except ValueError:
+                error_detail = exc.response.text
+            error_message = error_detail or "Offer submission failed"
+            try:
+                rfo = await api.get_request(rfo_id)
+            except httpx.HTTPStatusError as rfo_exc:
+                if rfo_exc.response.status_code == 404:
+                    raise HTTPException(status_code=404, detail="RFO not found") from rfo_exc
+                raise
+            vendor_offers = await api.list_vendor_offers(resolved_key)
+            offers = [
+                {
+                    "id": item["offer_id"],
+                    "price_amount": item["price_amount"],
+                    "currency": item["currency"],
+                    "delivery_eta_days": item["delivery_eta_days"],
+                    "warranty_months": item["warranty_months"],
+                    "return_days": item["return_days"],
+                    "stock": item["stock"],
+                }
+                for item in vendor_offers.get("items", [])
+                if item["rfo_id"] == rfo_id
+            ]
+
+            response = templates.TemplateResponse(
+                "rfo_detail.html",
+                {
+                    "request": request,
+                    "rfo": rfo,
+                    "offers": offers,
+                    "vendor": vendor,
+                    "api_key": resolved_key,
+                    "error": error_message,
+                },
+                status_code=exc.response.status_code,
+            )
+            if resolved_key and resolved_key != request.cookies.get("api_key"):
+                response.set_cookie("api_key", resolved_key, httponly=True)
+            return response
 
     response = RedirectResponse(url=f"/dashboard/rfos/{rfo_id}", status_code=303)
     if resolved_key and resolved_key != request.cookies.get("api_key"):

@@ -110,3 +110,32 @@ def test_dashboard_rfo_detail_lists_offers(client):
 
     assert response.status_code == 200
     assert "USD" in response.text
+
+
+def test_dashboard_submit_offer_shows_validation_error(client):
+    vendor_response = client.post("/v1/vendors/register", json={"name": "Acme"})
+    api_key = vendor_response.json()["api_key"]
+
+    rfo_payload = {
+        "category": "sneakers",
+        "constraints": {"budget_max": 120, "size": 42},
+        "preferences": {"w_price": 0.6, "w_delivery": 0.3, "w_warranty": 0.1},
+    }
+    rfo_response = client.post("/v1/rfo", json=rfo_payload)
+    rfo_id = rfo_response.json()["rfo_id"]
+
+    response = client.post(
+        f"/dashboard/rfos/{rfo_id}/offers",
+        data={
+            "price_amount": -5,
+            "currency": "USD",
+            "delivery_eta_days": 2,
+            "warranty_months": 12,
+            "return_days": 30,
+            "stock": "on",
+            "api_key": api_key,
+        },
+    )
+
+    assert response.status_code == 400
+    assert "Price must be positive" in response.text

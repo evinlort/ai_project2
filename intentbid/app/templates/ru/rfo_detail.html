@@ -13,6 +13,9 @@
 <section class="grid two" style="margin-top: 24px;">
   <div class="card">
     <h3>Отправить оффер</h3>
+    {% if error %}
+    <p class="notice">{{ error }}</p>
+    {% endif %}
     <form method="post" action="/ru/dashboard/rfos/{{ rfo.id }}/offers">
       <input type="hidden" name="api_key" value="{{ api_key }}" />
       <label for="price_amount">Цена</label>
