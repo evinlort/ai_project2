@@ -6,6 +6,8 @@ from intentbid.app.core.schemas import (
     VendorKeyCreateResponse,
     VendorKeyRevokeResponse,
     VendorMeResponse,
+    VendorProfileRequest,
+    VendorProfileResponse,
     VendorRegisterRequest,
     VendorRegisterResponse,
     VendorOnboardingStatusResponse,
@@ -17,8 +19,10 @@ from intentbid.app.core.schemas import (
 from intentbid.app.db.session import get_session
 from intentbid.app.services.vendor_service import (
     create_vendor_key,
+    get_vendor_profile,
     register_vendor,
     revoke_vendor_key,
+    upsert_vendor_profile,
 )
 from intentbid.app.services.offer_service import list_vendor_offers
 from intentbid.app.services.webhook_service import register_vendor_webhook
@@ -39,6 +43,46 @@ def register_vendor_route(
 @router.get("/me", response_model=VendorMeResponse)
 def vendor_me(vendor=Depends(require_vendor)) -> VendorMeResponse:
     return VendorMeResponse(vendor_id=vendor.id, name=vendor.name)
+
+
+@router.get("/me/profile", response_model=VendorProfileResponse)
+def vendor_profile_get(
+    vendor=Depends(require_vendor),
+    session: Session = Depends(get_session),
+) -> VendorProfileResponse:
+    profile = get_vendor_profile(session, vendor.id)
+    if not profile:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+    return VendorProfileResponse(
+        vendor_id=vendor.id,
+        categories=profile.categories,
+        regions=profile.regions,
+        lead_time_days=profile.lead_time_days,
+        min_order_value=profile.min_order_value,
+    )
+
+
+@router.put("/me/profile", response_model=VendorProfileResponse)
+def vendor_profile_update(
+    payload: VendorProfileRequest,
+    vendor=Depends(require_vendor),
+    session: Session = Depends(get_session),
+) -> VendorProfileResponse:
+    profile = upsert_vendor_profile(
+        session,
+        vendor.id,
+        categories=payload.categories,
+        regions=payload.regions,
+        lead_time_days=payload.lead_time_days,
+        min_order_value=payload.min_order_value,
+    )
+    return VendorProfileResponse(
+        vendor_id=vendor.id,
+        categories=profile.categories,
+        regions=profile.regions,
+        lead_time_days=profile.lead_time_days,
+        min_order_value=profile.min_order_value,
+    )
 
 
 @router.post("/keys", response_model=VendorKeyCreateResponse)

@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlmodel import Session, select
 
 from intentbid.app.core.security import generate_api_key, hash_api_key
-from intentbid.app.db.models import Vendor, VendorApiKey
+from intentbid.app.db.models import Vendor, VendorApiKey, VendorProfile
 
 
 def register_vendor(session: Session, name: str) -> tuple[Vendor, str]:
@@ -75,3 +75,38 @@ def revoke_vendor_key(session: Session, vendor_id: int, key_id: int) -> VendorAp
         session.commit()
         session.refresh(key)
     return key
+
+
+def get_vendor_profile(session: Session, vendor_id: int) -> VendorProfile | None:
+    return session.exec(
+        select(VendorProfile).where(VendorProfile.vendor_id == vendor_id)
+    ).first()
+
+
+def upsert_vendor_profile(
+    session: Session,
+    vendor_id: int,
+    categories: list[str],
+    regions: list[str],
+    lead_time_days: int | None,
+    min_order_value: float | None,
+) -> VendorProfile:
+    profile = get_vendor_profile(session, vendor_id)
+    if not profile:
+        profile = VendorProfile(
+            vendor_id=vendor_id,
+            categories=categories,
+            regions=regions,
+            lead_time_days=lead_time_days,
+            min_order_value=min_order_value,
+        )
+    else:
+        profile.categories = categories
+        profile.regions = regions
+        profile.lead_time_days = lead_time_days
+        profile.min_order_value = min_order_value
+
+    session.add(profile)
+    session.commit()
+    session.refresh(profile)
+    return profile

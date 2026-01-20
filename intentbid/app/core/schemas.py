@@ -18,6 +18,21 @@ class VendorMeResponse(BaseModel):
     name: str
 
 
+class VendorProfileRequest(BaseModel):
+    categories: list[str] = Field(default_factory=list)
+    regions: list[str] = Field(default_factory=list)
+    lead_time_days: int | None = Field(default=None, gt=0)
+    min_order_value: float | None = Field(default=None, gt=0)
+
+
+class VendorProfileResponse(BaseModel):
+    vendor_id: int
+    categories: list[str]
+    regions: list[str]
+    lead_time_days: int | None
+    min_order_value: float | None
+
+
 class BuyerRegisterRequest(BaseModel):
     name: str
 
