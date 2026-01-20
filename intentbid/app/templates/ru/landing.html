@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IntentBid Агрегатор</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&family=Rubik:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f4f3ef;
+        --bg-2: #eef6f4;
+        --ink: #191919;
+        --muted: #605c58;
+        --accent: #e07a2f;
+        --accent-2: #1d6b5c;
+        --card: #ffffff;
+        --shadow: 0 18px 40px rgba(25, 25, 25, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Manrope", sans-serif;
+        color: var(--ink);
+        background: radial-gradient(circle at 10% 10%, rgba(224, 122, 47, 0.2), transparent 45%),
+          radial-gradient(circle at 80% 20%, rgba(29, 107, 92, 0.2), transparent 45%),
+          linear-gradient(120deg, var(--bg) 0%, var(--bg-2) 100%);
+        min-height: 100vh;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 28px 48px;
+      }
+
+      .logo {
+        font-family: "Rubik", sans-serif;
+        font-weight: 700;
+        font-size: 24px;
+      }
+
+      nav a {
+        margin-left: 18px;
+        text-decoration: none;
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      nav a:hover {
+        color: var(--accent);
+      }
+
+      .hero {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px 48px 64px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 32px;
+        align-items: center;
+      }
+
+      h1 {
+        font-family: "Rubik", sans-serif;
+        font-size: clamp(30px, 4vw, 48px);
+        line-height: 1.1;
+        margin: 16px 0;
+      }
+
+      .lead {
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.6;
+      }
+
+      .cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .btn {
+        padding: 12px 20px;
+        border-radius: 999px;
+        border: none;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .btn.primary {
+        background: var(--accent);
+        color: #fffaf4;
+        box-shadow: 0 10px 20px rgba(224, 122, 47, 0.3);
+      }
+
+      .btn.ghost {
+        border: 1px solid rgba(25, 25, 25, 0.12);
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .panel {
+        background: var(--card);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: var(--shadow);
+      }
+
+      .flow {
+        display: grid;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .flow-step {
+        padding: 14px;
+        border-radius: 16px;
+        background: rgba(29, 107, 92, 0.08);
+      }
+
+      .section {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 48px 72px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: 20px;
+        padding: 22px;
+        box-shadow: 0 16px 30px rgba(25, 25, 25, 0.08);
+      }
+
+      @media (max-width: 720px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 24px;
+        }
+
+        .hero,
+        .section {
+          padding: 24px;
+        }
+
+        nav a {
+          margin-left: 0;
+          margin-right: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">IntentBid</div>
+      <nav>
+        <a href="/ru/buyer/register">Покупателю</a>
+        <a href="/ru/buyer/rfos">Мои запросы</a>
+        <a href="/ru/dashboard/login">Панель продавца</a>
+        <a href="/">EN</a>
+      </nav>
+    </header>
+
+    <main class="hero">
+      <section>
+        <h1>Запрос покупателя превращается в лучшие офферы продавцов.</h1>
+        <p class="lead">
+          IntentBid объединяет Запрос покупателя (RFO) и Оффер продавца в одном потоке: публикуйте
+          потребность, получайте офферы, и сразу видите лучшие варианты в UI и через API.
+        </p>
+        <div class="cta">
+          <a class="btn primary" href="/ru/buyer/register">Получить API-ключ</a>
+          <a class="btn ghost" href="/ru/dashboard/login">Войти продавцу</a>
+        </div>
+      </section>
+      <section class="panel">
+        <strong>Как работает агрегатор</strong>
+        <div class="flow">
+          <div class="flow-step">1. Создайте Запрос покупателя (RFO).</div>
+          <div class="flow-step">2. Продавцы отправляют Оффер продавца.</div>
+          <div class="flow-step">3. Рейтинг возвращает лучшие офферы.</div>
+        </div>
+      </section>
+    </main>
+
+    <section class="section">
+      <div class="grid">
+        <article class="card">
+          <strong>Покупателям</strong>
+          <p class="lead">Контролируйте статусы запросов и сравнивайте офферы по стоимости.</p>
+        </article>
+        <article class="card">
+          <strong>Продавцам</strong>
+          <p class="lead">Получайте релевантные запросы и отслеживайте результаты офферов.</p>
+        </article>
+        <article class="card">
+          <strong>Командам</strong>
+          <p class="lead">UI и API используют единые эндпоинты для автоматизации.</p>
+        </article>
+      </div>
+    </section>
+  </body>
+</html>

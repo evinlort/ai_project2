@@ -103,3 +103,36 @@ def test_ru_dashboard_rfo_detail_filters_vendor_offers(client):
     assert response.status_code == 200
     assert "USD" in response.text
     assert "EUR" not in response.text
+
+
+def test_ru_buyer_register_page_sets_cookie(client):
+    response = client.get("/ru/buyer/register")
+
+    assert response.status_code == 200
+    assert "API-ключ покупателя" in response.text
+    buyer_api_key = response.cookies.get("buyer_api_key")
+    assert buyer_api_key
+    assert buyer_api_key in response.text
+
+
+def test_ru_buyer_rfos_lists_owned_requests(client):
+    buyer = client.post("/v1/buyers/register", json={"name": "Buyer"}).json()
+
+    rfo_payload = {
+        "category": "sneakers",
+        "constraints": {"budget_max": 120, "size": 42, "delivery_deadline_days": 3},
+        "preferences": {"w_price": 0.6, "w_delivery": 0.3, "w_warranty": 0.1},
+    }
+    rfo_response = client.post(
+        "/v1/rfo",
+        json=rfo_payload,
+        headers={"X-Buyer-API-Key": buyer["api_key"]},
+    )
+    rfo_id = rfo_response.json()["rfo_id"]
+
+    response = client.get(f"/ru/buyer/rfos?buyer_api_key={buyer['api_key']}")
+
+    assert response.status_code == 200
+    assert rfo_payload["category"] in response.text
+    assert f"/buyer/rfos/best?rfo_id={rfo_id}" in response.text
+    assert "Офферы: 0" in response.text

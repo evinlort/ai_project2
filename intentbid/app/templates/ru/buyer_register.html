@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card">
+  <span class="pill">Покупатель</span>
+  <h2>API-ключ покупателя</h2>
+  <p class="muted">Запрос покупателя (RFO) и Оффер продавца помогают держать термины едиными.</p>
+  <p class="muted">Сохраните ключ для рейтинга и аналитики.</p>
+  <div class="notice">
+    <code>{{ buyer_api_key }}</code>
+  </div>
+  <p class="muted" style="margin-top: 16px;">
+    Дальше: создайте Запрос покупателя (RFO) и сравните Оффер продавца в ранжировании.
+  </p>
+</section>
+{% endblock %}

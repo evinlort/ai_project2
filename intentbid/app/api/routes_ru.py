@@ -21,6 +21,14 @@ def _resolve_api_key(request: Request, form_api_key: str | None = None) -> str |
     return form_api_key or request.query_params.get("api_key") or request.cookies.get("api_key")
 
 
+def _resolve_buyer_key(request: Request, form_api_key: str | None = None) -> str | None:
+    return (
+        form_api_key
+        or request.query_params.get("buyer_api_key")
+        or request.cookies.get("buyer_api_key")
+    )
+
+
 async def _fetch_vendor(request: Request, api_key: str) -> dict | None:
     transport = httpx.ASGITransport(app=request.app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
@@ -44,7 +52,7 @@ async def _get_vendor(request: Request, form_api_key: str | None = None):
 def ru_index(request: Request):
     api_key = request.cookies.get("api_key")
     return templates.TemplateResponse(
-        "index.html",
+        "landing.html",
         {"request": request, "api_key": api_key},
     )
 
@@ -52,6 +60,75 @@ def ru_index(request: Request):
 @router.get("/dashboard/login", response_class=HTMLResponse)
 def dashboard_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
+
+
+@router.get("/buyer/register", response_class=HTMLResponse)
+async def buyer_register(request: Request):
+    transport = httpx.ASGITransport(app=request.app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/v1/buyers/register", json={"name": "Buyer"})
+        response.raise_for_status()
+        payload = response.json()
+
+    buyer_api_key = payload["api_key"]
+    response = templates.TemplateResponse(
+        "buyer_register.html",
+        {"request": request, "buyer_api_key": buyer_api_key},
+    )
+    response.set_cookie("buyer_api_key", buyer_api_key, httponly=True)
+    return response
+
+
+@router.get("/buyer/rfos", response_class=HTMLResponse)
+async def buyer_rfo_list(request: Request):
+    buyer_api_key = _resolve_buyer_key(request)
+    error = None
+    rfo_rows = []
+
+    if not buyer_api_key:
+        error = "Добавьте API-ключ покупателя, чтобы увидеть запросы."
+    else:
+        transport = httpx.ASGITransport(app=request.app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            api = UiApiClient(client)
+            try:
+                response = await client.get(
+                    "/v1/buyers/rfos",
+                    headers={"X-Buyer-API-Key": buyer_api_key},
+                )
+                response.raise_for_status()
+            except httpx.HTTPStatusError as exc:
+                if exc.response.status_code == 401:
+                    error = "Неверный API-ключ покупателя."
+                else:
+                    try:
+                        error = exc.response.json().get("detail")
+                    except ValueError:
+                        error = exc.response.text
+                    error = error or "Не удалось загрузить запросы."
+            else:
+                payload = response.json()
+                for item in payload.get("items", []):
+                    detail = await api.get_request(item["id"])
+                    rfo_rows.append(
+                        {
+                            "rfo": item,
+                            "offers_count": detail.get("offers_count", 0),
+                        }
+                    )
+
+    response = templates.TemplateResponse(
+        "buyer_rfos.html",
+        {
+            "request": request,
+            "rfos": rfo_rows,
+            "buyer_api_key": buyer_api_key,
+            "error": error,
+        },
+    )
+    if buyer_api_key and buyer_api_key != request.cookies.get("buyer_api_key"):
+        response.set_cookie("buyer_api_key", buyer_api_key, httponly=True)
+    return response
 
 
 @router.post("/dashboard/login", response_class=HTMLResponse)

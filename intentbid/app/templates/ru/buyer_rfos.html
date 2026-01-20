@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card">
+  <span class="pill">Мои запросы</span>
+  <h2>Запросы покупателя</h2>
+  <p class="muted">Запрос покупателя (RFO) и Оффер продавца помогают держать термины едиными.</p>
+  <p class="muted">Отслеживайте статусы и лучшие офферы по каждому запросу.</p>
+  {% if error %}
+  <p class="notice error">{{ error }}</p>
+  {% endif %}
+</section>
+
+<section class="card" style="margin-top: 24px;">
+  {% if rfos %}
+  <table>
+    <thead>
+      <tr>
+        <th>Запрос</th>
+        <th>Статус</th>
+        <th>Офферы</th>
+        <th>Лучшие офферы</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rfos %}
+      <tr>
+        <td>{{ row.rfo.category }}</td>
+        <td>{{ row.rfo.status }}</td>
+        <td>Офферы: {{ row.offers_count }}</td>
+        <td>
+          <a href="/buyer/rfos/best?rfo_id={{ row.rfo.id }}">Лучшие офферы</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">Пока нет запросов. Создайте Запрос покупателя (RFO).</p>
+  {% endif %}
+</section>
+{% endblock %}
