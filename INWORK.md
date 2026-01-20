@@ -41,3 +41,7 @@
 - Update buyer check, best offers, and scoring pages to use API endpoints: Added invalid-key coverage and switched buyer detail, best-offer, and ranking pages to API calls with error messaging from responses.
 - Add an aggregator landing page and shared navigation: Added landing page tests plus a new / route with a branded template and base-nav links back to the landing page.
 - Keep the RU dashboard in sync with API-driven changes: Added RU landing/buyer templates and routes plus tests for buyer registration and request lists using the API client.
+
+# Automation, docs, and demo data
+
+- Extend the SDK with buyer and request list methods: Added SDK tests and new client methods for buyer registration, request listing, buyer-scoped lists, and rankings.
