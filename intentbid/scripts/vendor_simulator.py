@@ -4,10 +4,6 @@ import random
 from pathlib import Path
 
 import httpx
-from sqlmodel import Session, select
-
-from intentbid.app.db.models import RFO
-from intentbid.app.db.session import engine
 
 parser = argparse.ArgumentParser(description="Simulate vendors submitting offers")
 parser.add_argument("--api-url", default="http://localhost:8000")
@@ -24,21 +20,35 @@ if not vendor_file.exists():
     raise SystemExit("Run seed_demo.py first to create demo_vendors.json")
 
 vendors = json.loads(vendor_file.read_text())
-
-with Session(engine) as session:
-    rfos = session.exec(select(RFO).where(RFO.status == "OPEN")).all()
-
-if not rfos:
-    raise SystemExit("No OPEN RFOs found")
-
 client = httpx.Client(base_url=args.api_url, timeout=5.0)
+
+list_response = client.get("/v1/rfo", params={"status": "OPEN", "limit": 50})
+list_response.raise_for_status()
+open_rfos = list_response.json().get("items", [])
+
+if not open_rfos:
+    raise SystemExit("No OPEN RFOs found via API")
 
 for vendor in vendors:
     api_key = vendor["api_key"]
+    match_response = client.get(
+        "/v1/vendors/me/matches",
+        headers={"X-API-Key": api_key},
+        params={"limit": 50},
+    )
+    if match_response.status_code == 200:
+        match_items = match_response.json().get("items", [])
+        candidate_rfos = [item["rfo"] for item in match_items]
+    else:
+        candidate_rfos = []
+
+    if not candidate_rfos:
+        candidate_rfos = open_rfos
+
     for _ in range(args.limit):
-        rfo = random.choice(rfos)
-        budget = rfo.constraints.get("budget_max", 150)
-        deadline = rfo.constraints.get("delivery_deadline_days", 5)
+        rfo = random.choice(candidate_rfos)
+        budget = rfo.get("budget_max") or 150
+        deadline = rfo.get("delivery_deadline_days") or 5
 
         if args.mode == "discount":
             price = round(budget * random.uniform(0.6, 0.85), 2)
@@ -58,7 +68,7 @@ for vendor in vendors:
             warranty = random.choice([6, 12, 18, 24])
 
         payload = {
-            "rfo_id": rfo.id,
+            "rfo_id": rfo["id"],
             "price_amount": price,
             "currency": "USD",
             "delivery_eta_days": eta,
@@ -75,10 +85,10 @@ for vendor in vendors:
         )
         if response.status_code != 200:
             print(
-                f"Offer rejected for vendor {vendor['name']} on RFO {rfo.id}: {response.text}"
+                f"Offer rejected for vendor {vendor['name']} on RFO {rfo['id']}: {response.text}"
             )
         else:
             offer_id = response.json().get("offer_id")
-            print(f"Vendor {vendor['name']} posted offer {offer_id} on RFO {rfo.id}")
+            print(f"Vendor {vendor['name']} posted offer {offer_id} on RFO {rfo['id']}")
 
 client.close()
