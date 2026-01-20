@@ -7,6 +7,21 @@
   <p class="muted">Buyer request (RFO) and Vendor offer terminology keeps the dashboard aligned.</p>
   <p class="muted">Define constraints and scoring weights before vendors respond.</p>
   <form method="post">
+    <label for="buyer_api_key">Buyer API key (optional)</label>
+    <input
+      id="buyer_api_key"
+      name="buyer_api_key"
+      type="text"
+      value="{{ buyer_api_key or "" }}"
+      placeholder="Paste your buyer key"
+    />
+
+    <label for="title">Title</label>
+    <input id="title" name="title" type="text" placeholder="Bulk sneaker order" />
+
+    <label for="summary">Summary</label>
+    <textarea id="summary" name="summary" rows="3" placeholder="Share details buyers care about."></textarea>
+
     <label for="category">Category</label>
     <input id="category" name="category" type="text" placeholder="sneakers" required />
 
@@ -16,12 +31,28 @@
         <input id="budget_max" name="budget_max" type="number" min="0" step="0.01" required />
       </div>
       <div class="stack">
-        <label for="size">Size</label>
-        <input id="size" name="size" type="number" min="0" step="1" />
+        <label for="currency">Currency</label>
+        <input id="currency" name="currency" type="text" value="USD" />
+      </div>
+      <div class="stack">
+        <label for="quantity">Quantity</label>
+        <input id="quantity" name="quantity" type="number" min="0" step="1" />
+      </div>
+      <div class="stack">
+        <label for="location">Location</label>
+        <input id="location" name="location" type="text" placeholder="Berlin" />
       </div>
       <div class="stack">
         <label for="delivery_deadline_days">Delivery deadline (days)</label>
         <input id="delivery_deadline_days" name="delivery_deadline_days" type="number" min="0" step="1" required />
+      </div>
+      <div class="stack">
+        <label for="expires_at">Request deadline</label>
+        <input id="expires_at" name="expires_at" type="datetime-local" />
+      </div>
+      <div class="stack">
+        <label for="size">Size</label>
+        <input id="size" name="size" type="number" min="0" step="1" />
       </div>
     </div>
 

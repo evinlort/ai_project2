@@ -9,7 +9,8 @@ from sqlmodel import Session
 from intentbid.app.db.session import get_session
 from intentbid.app.services.buyer_service import get_buyer_by_api_key
 from intentbid.app.services.ranking_service import get_best_offers, get_ranked_offers
-from intentbid.app.services.rfo_service import create_rfo, get_rfo_with_offers_count
+from intentbid.app.services.rfo_service import get_rfo_with_offers_count
+from intentbid.app.ui.api_client import UiApiClient
 
 router = APIRouter(prefix="/buyer", tags=["buyer-dashboard"])
 
@@ -61,17 +62,31 @@ def buyer_rfo_create_page(request: Request):
 
 
 @router.post("/rfos/new")
-def buyer_rfo_create_submit(
+async def buyer_rfo_create_submit(
     request: Request,
+    title: str | None = Form(None),
+    summary: str | None = Form(None),
     category: str = Form(...),
     budget_max: float = Form(...),
+    currency: str | None = Form(None),
+    quantity: int | None = Form(None),
+    location: str | None = Form(None),
     size: int | None = Form(None),
     delivery_deadline_days: int = Form(...),
+    expires_at: str | None = Form(None),
     w_price: float = Form(...),
     w_delivery: float = Form(...),
     w_warranty: float = Form(...),
+    buyer_api_key: str | None = Form(None),
     session: Session = Depends(get_session),
 ):
+    buyer_key = _resolve_buyer_key(request, buyer_api_key)
+    title_value = title.strip() if title else None
+    summary_value = summary.strip() if summary else None
+    currency_value = currency.strip() if currency else None
+    location_value = location.strip() if location else None
+    expires_value = expires_at.strip() if expires_at else None
+
     constraints = {
         "budget_max": budget_max,
         "delivery_deadline_days": delivery_deadline_days,
@@ -84,8 +99,28 @@ def buyer_rfo_create_submit(
         "w_delivery": w_delivery,
         "w_warranty": w_warranty,
     }
-    rfo = create_rfo(session, category, constraints, preferences, buyer_id=None)
-    return RedirectResponse(url=f"/buyer/rfos/check?rfo_id={rfo.id}", status_code=303)
+    payload = {
+        "category": category,
+        "constraints": constraints,
+        "preferences": preferences,
+        "title": title_value,
+        "summary": summary_value,
+        "budget_max": budget_max,
+        "currency": currency_value,
+        "delivery_deadline_days": delivery_deadline_days,
+        "quantity": quantity,
+        "location": location_value,
+        "expires_at": expires_value,
+    }
+
+    transport = httpx.ASGITransport(app=request.app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        api = UiApiClient(client)
+        rfo_response = await api.create_request(payload, buyer_api_key=buyer_key)
+    return RedirectResponse(
+        url=f"/buyer/rfos/check?rfo_id={rfo_response['rfo_id']}",
+        status_code=303,
+    )
 
 
 @router.get("/rfos/check", response_class=HTMLResponse)

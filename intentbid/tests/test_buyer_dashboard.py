@@ -33,6 +33,39 @@ def test_buyer_rfo_create_redirects_to_check(client):
     assert "rfo_id=" in response.headers["location"]
 
 
+def test_buyer_rfo_create_sends_explicit_fields(client):
+    form_data = {
+        "title": "Bulk sneaker order",
+        "summary": "Need a bulk order for an upcoming launch.",
+        "category": "sneakers",
+        "budget_max": 180,
+        "currency": "USD",
+        "quantity": 250,
+        "location": "Berlin",
+        "delivery_deadline_days": 5,
+        "expires_at": "2099-01-01T12:00",
+        "w_price": 0.6,
+        "w_delivery": 0.3,
+        "w_warranty": 0.1,
+    }
+
+    response = client.post("/buyer/rfos/new", data=form_data, allow_redirects=False)
+
+    assert response.status_code in {302, 303}
+    location = response.headers["location"]
+    rfo_id = int(parse_qs(urlparse(location).query)["rfo_id"][0])
+    rfo_detail = client.get(f"/v1/rfo/{rfo_id}").json()
+
+    assert rfo_detail["title"] == form_data["title"]
+    assert rfo_detail["summary"] == form_data["summary"]
+    assert rfo_detail["budget_max"] == form_data["budget_max"]
+    assert rfo_detail["currency"] == form_data["currency"]
+    assert rfo_detail["quantity"] == form_data["quantity"]
+    assert rfo_detail["location"] == form_data["location"]
+    assert rfo_detail["delivery_deadline_days"] == form_data["delivery_deadline_days"]
+    assert rfo_detail["expires_at"]
+
+
 def test_buyer_rfo_check_page_shows_details(client):
     rfo_payload = {
         "category": "sneakers",
@@ -113,3 +146,4 @@ def test_buyer_scoring_page_shows_rankings(client):
     assert response.status_code == 200
     assert "Buyer scoring" in response.text
     assert "Score" in response.text
+from urllib.parse import parse_qs, urlparse
