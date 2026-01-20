@@ -1,0 +1,47 @@
+{% extends "buyer/base.html" %}
+
+{% block content %}
+<section class="card">
+  <span class="pill">My requests</span>
+  <h2>My requests</h2>
+  <p class="muted">Buyer request (RFO) and Vendor offer terminology keeps the dashboard aligned.</p>
+  <p class="muted">Track your active requests and review the best offers.</p>
+  {% if error %}
+  <p class="notice error">{{ error }}</p>
+  {% endif %}
+</section>
+
+<section class="card" style="margin-top: 24px;">
+  {% if rfos %}
+  <table>
+    <thead>
+      <tr>
+        <th>Request</th>
+        <th>Status</th>
+        <th>Offers</th>
+        <th>Best offers</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rfos %}
+      <tr>
+        <td>
+          {{ row.rfo.category }}
+          {% if row.rfo.title %}
+          <div class="muted">{{ row.rfo.title }}</div>
+          {% endif %}
+        </td>
+        <td>{{ row.rfo.status }}</td>
+        <td>Offers: {{ row.offers_count }}</td>
+        <td>
+          <a href="/buyer/rfos/best?rfo_id={{ row.rfo.id }}">View best offers</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No buyer requests yet. Start with <a href="/buyer/rfos/new">a new request</a>.</p>
+  {% endif %}
+</section>
+{% endblock %}

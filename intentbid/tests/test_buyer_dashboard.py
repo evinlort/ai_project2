@@ -81,6 +81,40 @@ def test_buyer_rfo_check_page_shows_details(client):
     assert rfo_payload["category"] in response.text
 
 
+def test_buyer_rfos_page_lists_owned_requests(client):
+    buyer_one = client.post("/v1/buyers/register", json={"name": "Buyer One"}).json()
+    buyer_two = client.post("/v1/buyers/register", json={"name": "Buyer Two"}).json()
+
+    first_payload = {
+        "category": "sneakers",
+        "constraints": {"budget_max": 120, "size": 42, "delivery_deadline_days": 3},
+        "preferences": {"w_price": 0.6, "w_delivery": 0.3, "w_warranty": 0.1},
+    }
+    second_payload = {
+        "category": "headphones",
+        "constraints": {"budget_max": 200, "delivery_deadline_days": 5},
+        "preferences": {"w_price": 0.5, "w_delivery": 0.2, "w_warranty": 0.3},
+    }
+    first_rfo = client.post(
+        "/v1/rfo",
+        json=first_payload,
+        headers={"X-Buyer-API-Key": buyer_one["api_key"]},
+    ).json()
+    client.post(
+        "/v1/rfo",
+        json=second_payload,
+        headers={"X-Buyer-API-Key": buyer_two["api_key"]},
+    )
+
+    response = client.get(f"/buyer/rfos?buyer_api_key={buyer_one['api_key']}")
+
+    assert response.status_code == 200
+    assert first_payload["category"] in response.text
+    assert second_payload["category"] not in response.text
+    assert f"/buyer/rfos/best?rfo_id={first_rfo['rfo_id']}" in response.text
+    assert "Offers: 0" in response.text
+
+
 def test_buyer_best_offers_page_lists_offers(client):
     vendor_response = client.post("/v1/vendors/register", json={"name": "Acme"})
     api_key = vendor_response.json()["api_key"]

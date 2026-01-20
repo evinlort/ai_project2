@@ -123,6 +123,54 @@ async def buyer_rfo_create_submit(
     )
 
 
+@router.get("/rfos", response_class=HTMLResponse)
+async def buyer_rfo_list(request: Request):
+    buyer_api_key = _resolve_buyer_key(request)
+    error = None
+    rfo_rows = []
+
+    if not buyer_api_key:
+        error = "Add your buyer API key to view requests."
+    else:
+        transport = httpx.ASGITransport(app=request.app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            api = UiApiClient(client)
+            try:
+                response = await client.get(
+                    "/v1/buyers/rfos",
+                    headers={"X-Buyer-API-Key": buyer_api_key},
+                )
+                response.raise_for_status()
+            except httpx.HTTPStatusError as exc:
+                if exc.response.status_code == 401:
+                    error = "Invalid buyer API key."
+                else:
+                    raise
+            else:
+                payload = response.json()
+                for item in payload.get("items", []):
+                    detail = await api.get_request(item["id"])
+                    rfo_rows.append(
+                        {
+                            "rfo": item,
+                            "offers_count": detail.get("offers_count", 0),
+                        }
+                    )
+
+    response = templates.TemplateResponse(
+        "buyer/rfo_list.html",
+        {
+            "request": request,
+            "rfos": rfo_rows,
+            "buyer_api_key": buyer_api_key,
+            "error": error,
+        },
+    )
+    if buyer_api_key and buyer_api_key != request.cookies.get("buyer_api_key"):
+        response.set_cookie("buyer_api_key", buyer_api_key, httponly=True)
+    return response
+
+
 @router.get("/rfos/check", response_class=HTMLResponse)
 def buyer_rfo_check(
     request: Request,
