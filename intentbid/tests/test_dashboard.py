@@ -80,3 +80,33 @@ def test_dashboard_rfos_has_filters(client):
     assert 'name="budget_min"' in response.text
     assert 'name="budget_max"' in response.text
     assert 'name="deadline_max"' in response.text
+
+
+def test_dashboard_rfo_detail_lists_offers(client):
+    vendor_response = client.post("/v1/vendors/register", json={"name": "Acme"})
+    api_key = vendor_response.json()["api_key"]
+
+    rfo_payload = {
+        "category": "sneakers",
+        "constraints": {"budget_max": 120, "size": 42},
+        "preferences": {"w_price": 0.6, "w_delivery": 0.3, "w_warranty": 0.1},
+    }
+    rfo_response = client.post("/v1/rfo", json=rfo_payload)
+    rfo_id = rfo_response.json()["rfo_id"]
+
+    offer_payload = {
+        "rfo_id": rfo_id,
+        "price_amount": 99.0,
+        "currency": "USD",
+        "delivery_eta_days": 2,
+        "warranty_months": 12,
+        "return_days": 30,
+        "stock": True,
+        "metadata": {"sku": "B"},
+    }
+    client.post("/v1/offers", json=offer_payload, headers={"X-API-Key": api_key})
+
+    response = client.get(f"/dashboard/rfos/{rfo_id}?api_key={api_key}")
+
+    assert response.status_code == 200
+    assert "USD" in response.text

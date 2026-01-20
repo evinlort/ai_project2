@@ -63,3 +63,43 @@ def test_ru_dashboard_api_detail_page(client):
     assert response.status_code == 200
     assert "Регистрация продавца" in response.text
     assert "POST /v1/vendors/register" in response.text
+
+
+def test_ru_dashboard_rfo_detail_filters_vendor_offers(client):
+    first_vendor = client.post("/v1/vendors/register", json={"name": "Acme"})
+    first_key = first_vendor.json()["api_key"]
+    second_vendor = client.post("/v1/vendors/register", json={"name": "Bravo"})
+    second_key = second_vendor.json()["api_key"]
+
+    rfo_payload = {
+        "category": "sneakers",
+        "constraints": {"budget_max": 120, "size": 42},
+        "preferences": {"w_price": 0.6, "w_delivery": 0.3, "w_warranty": 0.1},
+    }
+    rfo_response = client.post("/v1/rfo", json=rfo_payload)
+    rfo_id = rfo_response.json()["rfo_id"]
+
+    offer_payload = {
+        "rfo_id": rfo_id,
+        "price_amount": 99.0,
+        "currency": "USD",
+        "delivery_eta_days": 2,
+        "warranty_months": 12,
+        "return_days": 30,
+        "stock": True,
+        "metadata": {"sku": "B"},
+    }
+    client.post("/v1/offers", json=offer_payload, headers={"X-API-Key": first_key})
+
+    second_offer_payload = {
+        **offer_payload,
+        "currency": "EUR",
+        "price_amount": 101.0,
+    }
+    client.post("/v1/offers", json=second_offer_payload, headers={"X-API-Key": second_key})
+
+    response = client.get(f"/ru/dashboard/rfos/{rfo_id}?api_key={first_key}")
+
+    assert response.status_code == 200
+    assert "USD" in response.text
+    assert "EUR" not in response.text

@@ -118,11 +118,30 @@ async def dashboard_rfo_detail(
     if not vendor:
         return RedirectResponse(url="/ru/dashboard/login", status_code=303)
 
-    rfo = session.get(RFO, rfo_id)
-    if not rfo:
-        raise HTTPException(status_code=404, detail="RFO not found")
+    transport = httpx.ASGITransport(app=request.app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        api = UiApiClient(client)
+        try:
+            rfo = await api.get_request(rfo_id)
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 404:
+                raise HTTPException(status_code=404, detail="RFO not found") from exc
+            raise
+        vendor_offers = await api.list_vendor_offers(api_key)
 
-    offers = session.exec(select(Offer).where(Offer.rfo_id == rfo_id)).all()
+    offers = [
+        {
+            "id": item["offer_id"],
+            "price_amount": item["price_amount"],
+            "currency": item["currency"],
+            "delivery_eta_days": item["delivery_eta_days"],
+            "warranty_months": item["warranty_months"],
+            "return_days": item["return_days"],
+            "stock": item["stock"],
+        }
+        for item in vendor_offers.get("items", [])
+        if item["rfo_id"] == rfo_id
+    ]
 
     response = templates.TemplateResponse(
         "rfo_detail.html",
