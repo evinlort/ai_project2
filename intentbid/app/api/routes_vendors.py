@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, select
 
 from intentbid.app.api.deps import require_vendor
@@ -9,6 +9,8 @@ from intentbid.app.core.schemas import (
     VendorRegisterRequest,
     VendorRegisterResponse,
     VendorOnboardingStatusResponse,
+    VendorOfferListItem,
+    VendorOfferListResponse,
     VendorWebhookCreateRequest,
     VendorWebhookCreateResponse,
 )
@@ -18,6 +20,7 @@ from intentbid.app.services.vendor_service import (
     register_vendor,
     revoke_vendor_key,
 )
+from intentbid.app.services.offer_service import list_vendor_offers
 from intentbid.app.services.webhook_service import register_vendor_webhook
 from intentbid.app.db.models import VendorApiKey, VendorWebhook
 
@@ -107,3 +110,37 @@ def get_onboarding_status(
         "go_live": False,
     }
     return VendorOnboardingStatusResponse(vendor_id=vendor.id, steps=steps)
+
+
+@router.get("/me/offers", response_model=VendorOfferListResponse)
+def vendor_offers_list(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    vendor=Depends(require_vendor),
+    session: Session = Depends(get_session),
+) -> VendorOfferListResponse:
+    rows, total = list_vendor_offers(session, vendor.id, limit=limit, offset=offset)
+    items = [
+        VendorOfferListItem(
+            offer_id=offer.id,
+            rfo_id=offer.rfo_id,
+            price_amount=offer.price_amount,
+            currency=offer.currency,
+            delivery_eta_days=offer.delivery_eta_days,
+            warranty_months=offer.warranty_months,
+            return_days=offer.return_days,
+            stock=offer.stock,
+            metadata=offer.metadata_ or {},
+            created_at=offer.created_at,
+            status=offer.status,
+            is_awarded=offer.is_awarded,
+            request={
+                "id": rfo.id,
+                "title": rfo.title,
+                "category": rfo.category,
+                "status": rfo.status,
+            },
+        )
+        for offer, rfo in rows
+    ]
+    return VendorOfferListResponse(items=items, total=total, limit=limit, offset=offset)

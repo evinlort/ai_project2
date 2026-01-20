@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 
 from intentbid.app.core.config import settings
 from intentbid.app.core.schemas import OfferCreate
-from intentbid.app.db.models import Offer
+from intentbid.app.db.models import Offer, RFO
 from intentbid.app.services.billing_service import (
     get_active_subscription,
     get_plan_limit,
@@ -42,6 +42,26 @@ def create_offer(session: Session, vendor_id: int, payload: OfferCreate) -> Offe
     )
     record_usage(session, vendor_id=vendor_id, event_type="offer.created")
     return offer
+
+
+def list_vendor_offers(
+    session: Session,
+    vendor_id: int,
+    limit: int = 20,
+    offset: int = 0,
+) -> tuple[list[tuple[Offer, RFO]], int]:
+    total = session.exec(
+        select(func.count(Offer.id)).where(Offer.vendor_id == vendor_id)
+    ).one()
+    rows = session.exec(
+        select(Offer, RFO)
+        .join(RFO, RFO.id == Offer.rfo_id)
+        .where(Offer.vendor_id == vendor_id)
+        .order_by(Offer.created_at.desc())
+        .offset(offset)
+        .limit(limit)
+    ).all()
+    return rows, total
 
 
 def validate_offer_submission(

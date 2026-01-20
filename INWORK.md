@@ -19,3 +19,4 @@
 
 - Add list endpoint for buyer requests with filters: Added list API tests plus list schemas/service/route with status/category/budget/deadline filters and pagination.
 - Add buyer-scoped request list endpoint: Added tests and a buyer-owned list route that reuses list_rfos with buyer_id filtering.
+- Add vendor-scoped offers list endpoint: Added vendor offer list tests plus schemas, service query, and route returning offer data with request summaries.

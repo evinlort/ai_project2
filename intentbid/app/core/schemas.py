@@ -141,6 +141,36 @@ class RFOListResponse(BaseModel):
     offset: int
 
 
+class RFORequestSummary(BaseModel):
+    id: int
+    title: str | None = None
+    category: str
+    status: str
+
+
+class VendorOfferListItem(BaseModel):
+    offer_id: int
+    rfo_id: int
+    price_amount: float
+    currency: str
+    delivery_eta_days: int
+    warranty_months: int
+    return_days: int
+    stock: bool
+    metadata: Dict[str, Any]
+    created_at: datetime
+    status: str
+    is_awarded: bool
+    request: RFORequestSummary
+
+
+class VendorOfferListResponse(BaseModel):
+    items: list[VendorOfferListItem]
+    total: int
+    limit: int
+    offset: int
+
+
 class OfferCreate(BaseModel):
     rfo_id: int
     price_amount: float
