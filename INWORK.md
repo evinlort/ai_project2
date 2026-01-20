@@ -23,3 +23,4 @@
 - Add buyer-only offers list for a request: Added tests and a buyer-owned offers route returning raw offer data with ownership enforcement.
 - Add request update endpoint for buyers: Added PATCH tests plus update schema/service/route with ownership checks, OPEN-only enforcement, and audit logging.
 - Add vendor profile endpoints: Added GET/PUT profile tests plus schemas and upsert routing for vendor matching profiles.
+- Add vendor matching endpoint for requests: Added match tests plus matching service and route returning match reasons with request summaries.

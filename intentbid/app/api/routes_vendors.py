@@ -3,9 +3,12 @@ from sqlmodel import Session, select
 
 from intentbid.app.api.deps import require_vendor
 from intentbid.app.core.schemas import (
+    RFOListItem,
     VendorKeyCreateResponse,
     VendorKeyRevokeResponse,
     VendorMeResponse,
+    VendorMatchItem,
+    VendorMatchesResponse,
     VendorProfileRequest,
     VendorProfileResponse,
     VendorRegisterRequest,
@@ -25,6 +28,7 @@ from intentbid.app.services.vendor_service import (
     upsert_vendor_profile,
 )
 from intentbid.app.services.offer_service import list_vendor_offers
+from intentbid.app.services.matching_service import list_vendor_matches
 from intentbid.app.services.webhook_service import register_vendor_webhook
 from intentbid.app.db.models import VendorApiKey, VendorWebhook
 
@@ -188,3 +192,34 @@ def vendor_offers_list(
         for offer, rfo in rows
     ]
     return VendorOfferListResponse(items=items, total=total, limit=limit, offset=offset)
+
+
+@router.get("/me/matches", response_model=VendorMatchesResponse)
+def vendor_matches(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    vendor=Depends(require_vendor),
+    session: Session = Depends(get_session),
+) -> VendorMatchesResponse:
+    matches, total = list_vendor_matches(session, vendor.id, limit=limit, offset=offset)
+    items = [
+        VendorMatchItem(
+            rfo=RFOListItem(
+                id=rfo.id,
+                category=rfo.category,
+                title=rfo.title,
+                summary=rfo.summary,
+                budget_max=rfo.budget_max,
+                currency=rfo.currency,
+                delivery_deadline_days=rfo.delivery_deadline_days,
+                quantity=rfo.quantity,
+                location=rfo.location,
+                expires_at=rfo.expires_at,
+                status=rfo.status,
+                created_at=rfo.created_at,
+            ),
+            reasons=reasons,
+        )
+        for rfo, reasons in matches
+    ]
+    return VendorMatchesResponse(items=items, total=total, limit=limit, offset=offset)

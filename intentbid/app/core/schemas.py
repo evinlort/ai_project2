@@ -200,6 +200,18 @@ class VendorOfferListResponse(BaseModel):
     offset: int
 
 
+class VendorMatchItem(BaseModel):
+    rfo: RFOListItem
+    reasons: list[str]
+
+
+class VendorMatchesResponse(BaseModel):
+    items: list[VendorMatchItem]
+    total: int
+    limit: int
+    offset: int
+
+
 class OfferCreate(BaseModel):
     rfo_id: int
     price_amount: float
