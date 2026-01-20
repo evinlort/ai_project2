@@ -67,3 +67,16 @@ def test_dashboard_login_rejects_invalid_key(client):
 
     assert response.status_code == 401
     assert "Invalid API key" in response.text
+
+
+def test_dashboard_rfos_has_filters(client):
+    vendor_response = client.post("/v1/vendors/register", json={"name": "Acme"})
+    api_key = vendor_response.json()["api_key"]
+
+    response = client.get(f"/dashboard/rfos?api_key={api_key}")
+
+    assert response.status_code == 200
+    assert 'name="category"' in response.text
+    assert 'name="budget_min"' in response.text
+    assert 'name="budget_max"' in response.text
+    assert 'name="deadline_max"' in response.text

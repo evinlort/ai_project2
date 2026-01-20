@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 import httpx
@@ -81,9 +82,22 @@ async def dashboard_rfos(request: Request, session: Session = Depends(get_sessio
     if not vendor:
         return RedirectResponse(url="/ru/dashboard/login", status_code=303)
 
-    rfos = session.exec(
-        select(RFO).where(RFO.status == "OPEN").order_by(RFO.created_at.desc())
-    ).all()
+    params = {"status": "OPEN"}
+    for key in ("category", "budget_min", "budget_max", "deadline_max"):
+        value = request.query_params.get(key)
+        if value:
+            params[key] = value
+
+    transport = httpx.ASGITransport(app=request.app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        api = UiApiClient(client)
+        rfo_payload = await api.list_requests(params=params)
+
+    rfos = rfo_payload.get("items", [])
+    for rfo in rfos:
+        created_at = rfo.get("created_at")
+        if created_at:
+            rfo["created_at"] = datetime.fromisoformat(created_at)
 
     response = templates.TemplateResponse(
         "rfos.html",

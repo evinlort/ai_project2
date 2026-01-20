@@ -7,6 +7,31 @@
   <p class="muted">Доступно {{ rfos | length }} запросов для ваших офферов.</p>
 </section>
 
+<section class="card" style="margin-top: 24px;">
+  <form method="get">
+    <input type="hidden" name="api_key" value="{{ api_key }}" />
+    <div class="grid two">
+      <div class="stack">
+        <label for="category">Категория</label>
+        <input id="category" name="category" type="text" value="{{ request.query_params.get('category', '') }}" />
+      </div>
+      <div class="stack">
+        <label for="budget_min">Бюджет от</label>
+        <input id="budget_min" name="budget_min" type="number" step="0.01" value="{{ request.query_params.get('budget_min', '') }}" />
+      </div>
+      <div class="stack">
+        <label for="budget_max">Бюджет до</label>
+        <input id="budget_max" name="budget_max" type="number" step="0.01" value="{{ request.query_params.get('budget_max', '') }}" />
+      </div>
+      <div class="stack">
+        <label for="deadline_max">Срок (дней)</label>
+        <input id="deadline_max" name="deadline_max" type="number" step="1" value="{{ request.query_params.get('deadline_max', '') }}" />
+      </div>
+    </div>
+    <button type="submit" class="secondary">Применить фильтры</button>
+  </form>
+</section>
+
 <section class="grid two" style="margin-top: 24px;">
   {% for rfo in rfos %}
   <article class="card">
