@@ -9,6 +9,8 @@ from intentbid.app.core.schemas import (
     RFOCreate,
     RFOCreateResponse,
     RFOExplainResponse,
+    RFOListItem,
+    RFOListResponse,
     RFOScoringUpdateRequest,
     RFOScoringUpdateResponse,
     RFOStatusUpdateRequest,
@@ -22,6 +24,7 @@ from intentbid.app.services.rfo_service import (
     close_rfo,
     create_rfo,
     get_rfo_with_offers_count,
+    list_rfos,
     reopen_rfo,
     update_rfo_scoring_config,
 )
@@ -52,6 +55,49 @@ def create_rfo_route(
         expires_at=payload.expires_at,
     )
     return RFOCreateResponse(rfo_id=rfo.id, status=rfo.status)
+
+
+@router.get("", response_model=RFOListResponse)
+def list_rfos_route(
+    status: str | None = Query(None),
+    category: str | None = Query(None),
+    budget_min: float | None = Query(None, ge=0),
+    budget_max: float | None = Query(None, ge=0),
+    deadline_max: int | None = Query(None, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    session: Session = Depends(get_session),
+) -> RFOListResponse:
+    rfos, total = list_rfos(
+        session,
+        status=status,
+        category=category,
+        budget_min=budget_min,
+        budget_max=budget_max,
+        deadline_max=deadline_max,
+        limit=limit,
+        offset=offset,
+    )
+
+    items = [
+        RFOListItem(
+            id=rfo.id,
+            category=rfo.category,
+            title=rfo.title,
+            summary=rfo.summary,
+            budget_max=rfo.budget_max,
+            currency=rfo.currency,
+            delivery_deadline_days=rfo.delivery_deadline_days,
+            quantity=rfo.quantity,
+            location=rfo.location,
+            expires_at=rfo.expires_at,
+            status=rfo.status,
+            created_at=rfo.created_at,
+        )
+        for rfo in rfos
+    ]
+
+    return RFOListResponse(items=items, total=total, limit=limit, offset=offset)
 
 
 @router.get("/{rfo_id}", response_model=RFODetailResponse)

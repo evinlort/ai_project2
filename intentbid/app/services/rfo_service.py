@@ -78,6 +78,35 @@ def get_rfo_with_offers_count(session: Session, rfo_id: int) -> tuple[RFO | None
     return rfo, offers_count
 
 
+def list_rfos(
+    session: Session,
+    status: str | None = None,
+    category: str | None = None,
+    budget_min: float | None = None,
+    budget_max: float | None = None,
+    deadline_max: int | None = None,
+    limit: int = 20,
+    offset: int = 0,
+) -> tuple[list[RFO], int]:
+    query = select(RFO)
+    if status:
+        query = query.where(RFO.status == status)
+    if category:
+        query = query.where(RFO.category == category)
+    if budget_min is not None:
+        query = query.where(RFO.budget_max >= budget_min)
+    if budget_max is not None:
+        query = query.where(RFO.budget_max <= budget_max)
+    if deadline_max is not None:
+        query = query.where(RFO.delivery_deadline_days <= deadline_max)
+
+    total = session.exec(select(func.count()).select_from(query.subquery())).one()
+    items = session.exec(
+        query.order_by(RFO.created_at.desc()).offset(offset).limit(limit)
+    ).all()
+    return items, total
+
+
 def _log_rfo_action(
     session: Session,
     rfo_id: int,

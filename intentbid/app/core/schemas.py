@@ -119,6 +119,28 @@ class RFODetailResponse(BaseModel):
     offers_count: int
 
 
+class RFOListItem(BaseModel):
+    id: int
+    category: str
+    title: str | None = None
+    summary: str | None = None
+    budget_max: float | None = None
+    currency: str | None = None
+    delivery_deadline_days: int | None = None
+    quantity: int | None = None
+    location: str | None = None
+    expires_at: datetime | None = None
+    status: str
+    created_at: datetime
+
+
+class RFOListResponse(BaseModel):
+    items: list[RFOListItem]
+    total: int
+    limit: int
+    offset: int
+
+
 class OfferCreate(BaseModel):
     rfo_id: int
     price_amount: float
