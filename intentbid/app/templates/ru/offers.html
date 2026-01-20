@@ -16,18 +16,20 @@
         <th>Цена</th>
         <th>Срок</th>
         <th>Гарантия</th>
-        <th>Скоринг</th>
+        <th>Статус запроса</th>
+        <th>Награда</th>
         <th>Статус</th>
       </tr>
     </thead>
     <tbody>
       {% for row in offers %}
       <tr>
-        <td>{{ row.rfo.id }}</td>
+        <td>{{ row.request.id }}</td>
         <td>{{ row.offer.price_amount }} {{ row.offer.currency }}</td>
         <td>{{ row.offer.delivery_eta_days }} дней</td>
         <td>{{ row.offer.warranty_months }} мес</td>
-        <td>{{ "%.2f" | format(row.score) }}</td>
+        <td>{{ row.request.status }}</td>
+        <td>{{ "Получен" if row.is_awarded else "Ожидается" }}</td>
         <td class="status {{ row.status }}">
           {{ "выиграл" if row.status == "won" else "проиграл" }}
         </td>

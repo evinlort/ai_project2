@@ -16,18 +16,20 @@
         <th>Price</th>
         <th>ETA</th>
         <th>Warranty</th>
-        <th>Score</th>
+        <th>Request status</th>
+        <th>Award</th>
         <th>Status</th>
       </tr>
     </thead>
     <tbody>
       {% for row in offers %}
       <tr>
-        <td>{{ row.rfo.id }}</td>
+        <td>{{ row.request.id }}</td>
         <td>{{ row.offer.price_amount }} {{ row.offer.currency }}</td>
         <td>{{ row.offer.delivery_eta_days }} days</td>
         <td>{{ row.offer.warranty_months }} months</td>
-        <td>{{ "%.2f" | format(row.score) }}</td>
+        <td>{{ row.request.status }}</td>
+        <td>{{ "Awarded" if row.is_awarded else "Pending" }}</td>
         <td class="status {{ row.status }}">{{ row.status }}</td>
       </tr>
       {% endfor %}

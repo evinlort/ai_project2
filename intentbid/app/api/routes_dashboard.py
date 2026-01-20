@@ -5,10 +5,8 @@ import httpx
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select
+from sqlmodel import Session
 
-from intentbid.app.core.scoring import score_offer
-from intentbid.app.db.models import Offer, RFO
 from intentbid.app.db.session import get_session
 from intentbid.app.ui.api_client import UiApiClient
 from intentbid.app.api.api_docs import get_api_doc, list_api_docs
@@ -235,27 +233,22 @@ async def dashboard_offers(request: Request, session: Session = Depends(get_sess
     if not vendor:
         return RedirectResponse(url="/dashboard/login", status_code=303)
 
-    offers = session.exec(
-        select(Offer).where(Offer.vendor_id == vendor["vendor_id"])
-    ).all()
-    rfo_ids = {offer.rfo_id for offer in offers}
-    rfos = {
-        rfo.id: rfo
-        for rfo in session.exec(select(RFO).where(RFO.id.in_(rfo_ids))).all()
-    }
+    transport = httpx.ASGITransport(app=request.app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        api = UiApiClient(client)
+        offer_payload = await api.list_vendor_offers(api_key)
 
     offer_rows = []
-    best_scores = {}
-    for offer in offers:
-        rfo = rfos.get(offer.rfo_id)
-        if not rfo:
-            continue
-        score, _ = score_offer(offer, rfo)
-        best_scores[offer.rfo_id] = max(best_scores.get(offer.rfo_id, 0), score)
-        offer_rows.append({"offer": offer, "score": score, "rfo": rfo})
-
-    for row in offer_rows:
-        row["status"] = "won" if row["score"] == best_scores.get(row["rfo"].id, 0) else "lost"
+    for item in offer_payload.get("items", []):
+        is_awarded = item.get("is_awarded") or item.get("status") == "awarded"
+        offer_rows.append(
+            {
+                "offer": item,
+                "request": item.get("request", {}),
+                "status": "won" if is_awarded else "lost",
+                "is_awarded": is_awarded,
+            }
+        )
 
     response = templates.TemplateResponse(
         "offers.html",

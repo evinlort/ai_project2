@@ -139,3 +139,38 @@ def test_dashboard_submit_offer_shows_validation_error(client):
 
     assert response.status_code == 400
     assert "Price must be positive" in response.text
+
+
+def test_dashboard_offers_show_request_status_and_award(client):
+    vendor_response = client.post("/v1/vendors/register", json={"name": "Acme"})
+    api_key = vendor_response.json()["api_key"]
+
+    rfo_payload = {
+        "category": "sneakers",
+        "constraints": {"budget_max": 120, "size": 42},
+        "preferences": {"w_price": 0.6, "w_delivery": 0.3, "w_warranty": 0.1},
+    }
+    rfo_response = client.post("/v1/rfo", json=rfo_payload)
+    rfo_id = rfo_response.json()["rfo_id"]
+
+    offer_payload = {
+        "rfo_id": rfo_id,
+        "price_amount": 99.0,
+        "currency": "USD",
+        "delivery_eta_days": 2,
+        "warranty_months": 12,
+        "return_days": 30,
+        "stock": True,
+        "metadata": {"sku": "B"},
+    }
+    offer_response = client.post("/v1/offers", json=offer_payload, headers={"X-API-Key": api_key})
+    offer_id = offer_response.json()["offer_id"]
+
+    client.post(f"/v1/rfo/{rfo_id}/close", json={})
+    client.post(f"/v1/rfo/{rfo_id}/award", json={"offer_id": offer_id})
+
+    response = client.get(f"/dashboard/offers?api_key={api_key}")
+
+    assert response.status_code == 200
+    assert "AWARDED" in response.text
+    assert "Awarded" in response.text
