@@ -24,3 +24,4 @@
 - Add request update endpoint for buyers: Added PATCH tests plus update schema/service/route with ownership checks, OPEN-only enforcement, and audit logging.
 - Add vendor profile endpoints: Added GET/PUT profile tests plus schemas and upsert routing for vendor matching profiles.
 - Add vendor matching endpoint for requests: Added match tests plus matching service and route returning match reasons with request summaries.
+- Emit request lifecycle events for automation: Added webhook tests plus RFO event enqueues for created, closed, and awarded transitions.

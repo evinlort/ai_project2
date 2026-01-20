@@ -94,3 +94,60 @@ def test_outbox_dispatch_delivers_signed_payload(client, session):
 
     session.refresh(event)
     assert event.status == "delivered"
+
+
+def test_rfo_created_event_enqueued(client, session):
+    api_key, vendor_id, rfo_id = _create_vendor_and_rfo(client)
+
+    _ = api_key
+    event = session.exec(
+        select(EventOutbox).where(
+            EventOutbox.vendor_id == vendor_id,
+            EventOutbox.event_type == "rfo.created",
+        )
+    ).first()
+
+    assert event is not None
+    assert event.payload["rfo_id"] == rfo_id
+
+
+def test_rfo_closed_event_enqueued(client, session):
+    api_key, vendor_id, rfo_id = _create_vendor_and_rfo(client)
+
+    _ = api_key
+    response = client.post(f"/v1/rfo/{rfo_id}/close")
+    assert response.status_code == 200
+
+    event = session.exec(
+        select(EventOutbox).where(
+            EventOutbox.vendor_id == vendor_id,
+            EventOutbox.event_type == "rfo.closed",
+        )
+    ).first()
+
+    assert event is not None
+    assert event.payload["rfo_id"] == rfo_id
+
+
+def test_rfo_awarded_event_enqueued(client, session):
+    api_key, vendor_id, rfo_id = _create_vendor_and_rfo(client)
+    offer_id = _submit_offer(client, api_key, rfo_id)
+
+    response = client.post(f"/v1/rfo/{rfo_id}/close")
+    assert response.status_code == 200
+
+    award_response = client.post(
+        f"/v1/rfo/{rfo_id}/award", json={"offer_id": offer_id}
+    )
+    assert award_response.status_code == 200
+
+    event = session.exec(
+        select(EventOutbox).where(
+            EventOutbox.vendor_id == vendor_id,
+            EventOutbox.event_type == "rfo.awarded",
+        )
+    ).first()
+
+    assert event is not None
+    assert event.payload["rfo_id"] == rfo_id
+    assert event.payload["offer_id"] == offer_id

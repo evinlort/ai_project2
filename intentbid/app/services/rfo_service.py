@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 from sqlalchemy import func
 from sqlmodel import Session, select
 
-from intentbid.app.db.models import AuditLog, Offer, RFO
+from intentbid.app.db.models import AuditLog, Offer, RFO, Vendor
+from intentbid.app.services.webhook_service import enqueue_event
 
 
 def _sync_request_fields(
@@ -26,6 +27,21 @@ def _sync_request_fields(
         merged_constraints["delivery_deadline_days"] = resolved_deadline
 
     return merged_constraints, resolved_budget_max, resolved_deadline
+
+
+def _enqueue_rfo_event(
+    session: Session,
+    event_type: str,
+    rfo: RFO,
+    offer_id: int | None = None,
+) -> None:
+    vendor_ids = session.exec(select(Vendor.id)).all()
+    payload = {"rfo_id": rfo.id, "status": rfo.status}
+    if offer_id is not None:
+        payload["offer_id"] = offer_id
+
+    for vendor_id in vendor_ids:
+        enqueue_event(session, vendor_id=vendor_id, event_type=event_type, payload=payload)
 
 
 def create_rfo(
@@ -64,6 +80,7 @@ def create_rfo(
     session.add(rfo)
     session.commit()
     session.refresh(rfo)
+    _enqueue_rfo_event(session, "rfo.created", rfo)
     return rfo
 
 
@@ -151,7 +168,10 @@ def _transition_rfo(
 
 
 def close_rfo(session: Session, rfo_id: int, reason: str | None = None) -> tuple[RFO | None, str | None]:
-    return _transition_rfo(session, rfo_id, {"OPEN"}, "CLOSED", "close", reason)
+    rfo, error = _transition_rfo(session, rfo_id, {"OPEN"}, "CLOSED", "close", reason)
+    if not error and rfo:
+        _enqueue_rfo_event(session, "rfo.closed", rfo)
+    return rfo, error
 
 
 def award_rfo(
@@ -186,6 +206,7 @@ def award_rfo(
 
     session.commit()
     session.refresh(rfo)
+    _enqueue_rfo_event(session, "rfo.awarded", rfo, offer_id=offer_id)
     return rfo, None
 
 
