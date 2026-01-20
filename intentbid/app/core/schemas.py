@@ -74,6 +74,20 @@ class RFOCreate(BaseModel):
     expires_at: datetime | None = None
 
 
+class RFOUpdateRequest(BaseModel):
+    category: str | None = None
+    constraints: Dict[str, Any] | None = None
+    preferences: Dict[str, Any] | None = None
+    title: str | None = None
+    summary: str | None = None
+    budget_max: float | None = Field(default=None, gt=0)
+    currency: str | None = None
+    delivery_deadline_days: int | None = Field(default=None, gt=0)
+    quantity: int | None = Field(default=None, gt=0)
+    location: str | None = None
+    expires_at: datetime | None = None
+
+
 class RFOCreateResponse(BaseModel):
     rfo_id: int
     status: str

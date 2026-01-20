@@ -14,6 +14,7 @@ from intentbid.app.core.schemas import (
     RFOOffersResponse,
     RFOScoringUpdateRequest,
     RFOScoringUpdateResponse,
+    RFOUpdateRequest,
     RFOStatusUpdateRequest,
     RFOStatusUpdateResponse,
     RFODetailResponse,
@@ -28,6 +29,7 @@ from intentbid.app.services.rfo_service import (
     get_rfo_with_offers_count,
     list_rfos,
     reopen_rfo,
+    update_rfo,
     update_rfo_scoring_config,
 )
 
@@ -107,6 +109,45 @@ def get_rfo_route(
     rfo_id: int,
     session: Session = Depends(get_session),
 ) -> RFODetailResponse:
+    rfo, offers_count = get_rfo_with_offers_count(session, rfo_id)
+    if not rfo:
+        raise HTTPException(status_code=404, detail="RFO not found")
+
+    return RFODetailResponse(
+        id=rfo.id,
+        category=rfo.category,
+        title=rfo.title,
+        summary=rfo.summary,
+        budget_max=rfo.budget_max,
+        currency=rfo.currency,
+        delivery_deadline_days=rfo.delivery_deadline_days,
+        quantity=rfo.quantity,
+        location=rfo.location,
+        expires_at=rfo.expires_at,
+        constraints=rfo.constraints,
+        preferences=rfo.preferences,
+        status=rfo.status,
+        created_at=rfo.created_at,
+        offers_count=offers_count,
+    )
+
+
+@router.patch("/{rfo_id}", response_model=RFODetailResponse)
+def update_rfo_route(
+    rfo_id: int,
+    payload: RFOUpdateRequest,
+    buyer=Depends(require_buyer),
+    session: Session = Depends(get_session),
+) -> RFODetailResponse:
+    updates = payload.dict(exclude_unset=True)
+    rfo, error = update_rfo(session, rfo_id, buyer.id, updates)
+    if error == "not_found":
+        raise HTTPException(status_code=404, detail="RFO not found")
+    if error == "forbidden":
+        raise HTTPException(status_code=403, detail="Buyer does not own this RFO")
+    if error == "invalid":
+        raise HTTPException(status_code=400, detail="RFO must be OPEN to update")
+
     rfo, offers_count = get_rfo_with_offers_count(session, rfo_id)
     if not rfo:
         raise HTTPException(status_code=404, detail="RFO not found")

@@ -210,3 +210,51 @@ def update_rfo_scoring_config(
     session.commit()
     session.refresh(rfo)
     return rfo
+
+
+def update_rfo(
+    session: Session,
+    rfo_id: int,
+    buyer_id: int,
+    updates: dict,
+) -> tuple[RFO | None, str | None]:
+    rfo = session.get(RFO, rfo_id)
+    if not rfo:
+        return None, "not_found"
+    if rfo.buyer_id != buyer_id:
+        return rfo, "forbidden"
+    if rfo.status != "OPEN":
+        return rfo, "invalid"
+
+    if "category" in updates:
+        rfo.category = updates["category"]
+    if "title" in updates:
+        rfo.title = updates["title"]
+    if "summary" in updates:
+        rfo.summary = updates["summary"]
+    if "currency" in updates:
+        rfo.currency = updates["currency"]
+    if "quantity" in updates:
+        rfo.quantity = updates["quantity"]
+    if "location" in updates:
+        rfo.location = updates["location"]
+    if "expires_at" in updates:
+        rfo.expires_at = updates["expires_at"]
+    if "preferences" in updates:
+        rfo.preferences = updates["preferences"]
+
+    base_constraints = updates.get("constraints", rfo.constraints)
+    merged_constraints, resolved_budget_max, resolved_deadline = _sync_request_fields(
+        base_constraints,
+        updates.get("budget_max", rfo.budget_max),
+        updates.get("delivery_deadline_days", rfo.delivery_deadline_days),
+    )
+    rfo.constraints = merged_constraints
+    rfo.budget_max = resolved_budget_max
+    rfo.delivery_deadline_days = resolved_deadline
+
+    session.add(rfo)
+    _log_rfo_action(session, rfo_id, "update", {"fields": sorted(updates.keys())})
+    session.commit()
+    session.refresh(rfo)
+    return rfo, None
