@@ -16,6 +16,10 @@ class UiApiClient:
     async def get_request(self, rfo_id: int) -> dict:
         return await self._request("GET", f"/v1/rfo/{rfo_id}")
 
+    async def get_vendor_me(self, api_key: str) -> dict:
+        headers = {"X-API-Key": api_key}
+        return await self._request("GET", "/v1/vendors/me", headers=headers)
+
     async def create_request(self, payload: dict, buyer_api_key: str | None = None) -> dict:
         headers = {"X-Buyer-API-Key": buyer_api_key} if buyer_api_key else None
         return await self._request("POST", "/v1/rfo", json=payload, headers=headers)

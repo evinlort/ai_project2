@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import httpx
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -10,7 +11,7 @@ from intentbid.app.core.scoring import score_offer
 from intentbid.app.db.models import Offer, RFO
 from intentbid.app.db.session import get_session
 from intentbid.app.services.offer_service import create_offer
-from intentbid.app.services.vendor_service import get_vendor_by_api_key
+from intentbid.app.ui.api_client import UiApiClient
 from intentbid.app.api.api_docs import get_api_doc, list_api_docs
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
@@ -23,12 +24,22 @@ def _resolve_api_key(request: Request, form_api_key: str | None = None) -> str |
     return form_api_key or request.query_params.get("api_key") or request.cookies.get("api_key")
 
 
-def _get_vendor(session: Session, request: Request, form_api_key: str | None = None):
+async def _fetch_vendor(request: Request, api_key: str) -> dict | None:
+    transport = httpx.ASGITransport(app=request.app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        api = UiApiClient(client)
+        try:
+            return await api.get_vendor_me(api_key)
+        except httpx.HTTPStatusError:
+            return None
+
+
+async def _get_vendor(request: Request, form_api_key: str | None = None):
     api_key = _resolve_api_key(request, form_api_key)
     if not api_key:
         return None, None
 
-    vendor = get_vendor_by_api_key(session, api_key)
+    vendor = await _fetch_vendor(request, api_key)
     return vendor, api_key
 
 
@@ -38,12 +49,11 @@ def dashboard_login(request: Request):
 
 
 @router.post("/login", response_class=HTMLResponse)
-def dashboard_login_submit(
+async def dashboard_login_submit(
     request: Request,
     api_key: str = Form(...),
-    session: Session = Depends(get_session),
 ):
-    vendor = get_vendor_by_api_key(session, api_key)
+    vendor = await _fetch_vendor(request, api_key)
     if not vendor:
         return templates.TemplateResponse(
             "login.html",
@@ -57,8 +67,8 @@ def dashboard_login_submit(
 
 
 @router.get("/rfos", response_class=HTMLResponse)
-def dashboard_rfos(request: Request, session: Session = Depends(get_session)):
-    vendor, api_key = _get_vendor(session, request)
+async def dashboard_rfos(request: Request, session: Session = Depends(get_session)):
+    vendor, api_key = await _get_vendor(request)
     if not vendor:
         return RedirectResponse(url="/dashboard/login", status_code=303)
 
@@ -76,12 +86,12 @@ def dashboard_rfos(request: Request, session: Session = Depends(get_session)):
 
 
 @router.get("/rfos/{rfo_id}", response_class=HTMLResponse)
-def dashboard_rfo_detail(
+async def dashboard_rfo_detail(
     request: Request,
     rfo_id: int,
     session: Session = Depends(get_session),
 ):
-    vendor, api_key = _get_vendor(session, request)
+    vendor, api_key = await _get_vendor(request)
     if not vendor:
         return RedirectResponse(url="/dashboard/login", status_code=303)
 
@@ -107,7 +117,7 @@ def dashboard_rfo_detail(
 
 
 @router.post("/rfos/{rfo_id}/offers")
-def dashboard_submit_offer(
+async def dashboard_submit_offer(
     request: Request,
     rfo_id: int,
     price_amount: float = Form(...),
@@ -119,7 +129,7 @@ def dashboard_submit_offer(
     api_key: str | None = Form(None),
     session: Session = Depends(get_session),
 ):
-    vendor, resolved_key = _get_vendor(session, request, form_api_key=api_key)
+    vendor, resolved_key = await _get_vendor(request, form_api_key=api_key)
     if not vendor:
         return RedirectResponse(url="/dashboard/login", status_code=303)
 
@@ -139,7 +149,7 @@ def dashboard_submit_offer(
         stock=bool(stock),
         metadata={},
     )
-    create_offer(session, vendor.id, payload)
+    create_offer(session, vendor["vendor_id"], payload)
 
     response = RedirectResponse(url=f"/dashboard/rfos/{rfo_id}", status_code=303)
     if resolved_key and resolved_key != request.cookies.get("api_key"):
@@ -148,12 +158,14 @@ def dashboard_submit_offer(
 
 
 @router.get("/offers", response_class=HTMLResponse)
-def dashboard_offers(request: Request, session: Session = Depends(get_session)):
-    vendor, api_key = _get_vendor(session, request)
+async def dashboard_offers(request: Request, session: Session = Depends(get_session)):
+    vendor, api_key = await _get_vendor(request)
     if not vendor:
         return RedirectResponse(url="/dashboard/login", status_code=303)
 
-    offers = session.exec(select(Offer).where(Offer.vendor_id == vendor.id)).all()
+    offers = session.exec(
+        select(Offer).where(Offer.vendor_id == vendor["vendor_id"])
+    ).all()
     rfo_ids = {offer.rfo_id for offer in offers}
     rfos = {
         rfo.id: rfo
@@ -188,8 +200,8 @@ def dashboard_offers(request: Request, session: Session = Depends(get_session)):
 
 
 @router.get("/apis", response_class=HTMLResponse)
-def dashboard_api_list(request: Request, session: Session = Depends(get_session)):
-    vendor, api_key = _get_vendor(session, request)
+async def dashboard_api_list(request: Request, session: Session = Depends(get_session)):
+    vendor, api_key = await _get_vendor(request)
     if not vendor:
         return RedirectResponse(url="/dashboard/login", status_code=303)
 
@@ -204,12 +216,12 @@ def dashboard_api_list(request: Request, session: Session = Depends(get_session)
 
 
 @router.get("/apis/{slug}", response_class=HTMLResponse)
-def dashboard_api_detail(
+async def dashboard_api_detail(
     request: Request,
     slug: str,
     session: Session = Depends(get_session),
 ):
-    vendor, api_key = _get_vendor(session, request)
+    vendor, api_key = await _get_vendor(request)
     if not vendor:
         return RedirectResponse(url="/dashboard/login", status_code=303)
 

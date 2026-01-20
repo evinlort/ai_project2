@@ -56,3 +56,14 @@ def test_dashboard_api_detail_page(client):
     assert response.status_code == 200
     assert "Vendor registration" in response.text
     assert "POST /v1/vendors/register" in response.text
+
+
+def test_dashboard_login_rejects_invalid_key(client):
+    response = client.post(
+        "/dashboard/login",
+        data={"api_key": "bad-key"},
+        allow_redirects=False,
+    )
+
+    assert response.status_code == 401
+    assert "Invalid API key" in response.text

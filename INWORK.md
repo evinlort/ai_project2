@@ -30,3 +30,4 @@
 # UI application that consumes the API
 
 - Add an internal API client wrapper for UI routes: Added async client tests plus a UiApiClient wrapper for listing requests, submitting offers, and fetching rankings.
+- Update vendor login to validate via the API: Added invalid-key coverage and switched dashboard vendor lookups to /v1/vendors/me via UiApiClient in EN/RU routes.
