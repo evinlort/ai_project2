@@ -85,10 +85,13 @@ def list_rfos(
     budget_min: float | None = None,
     budget_max: float | None = None,
     deadline_max: int | None = None,
+    buyer_id: int | None = None,
     limit: int = 20,
     offset: int = 0,
 ) -> tuple[list[RFO], int]:
     query = select(RFO)
+    if buyer_id is not None:
+        query = query.where(RFO.buyer_id == buyer_id)
     if status:
         query = query.where(RFO.status == status)
     if category:
