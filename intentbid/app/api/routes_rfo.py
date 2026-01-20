@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session
+from sqlmodel import Session, select
 
-from intentbid.app.api.deps import optional_buyer
+from intentbid.app.api.deps import optional_buyer, require_buyer
 from intentbid.app.core.schemas import (
     BestOffer,
     BestOffersResponse,
@@ -11,12 +11,14 @@ from intentbid.app.core.schemas import (
     RFOExplainResponse,
     RFOListItem,
     RFOListResponse,
+    RFOOffersResponse,
     RFOScoringUpdateRequest,
     RFOScoringUpdateResponse,
     RFOStatusUpdateRequest,
     RFOStatusUpdateResponse,
     RFODetailResponse,
 )
+from intentbid.app.db.models import Offer, RFO
 from intentbid.app.db.session import get_session
 from intentbid.app.services.ranking_service import get_best_offers, get_ranked_offers
 from intentbid.app.services.rfo_service import (
@@ -126,6 +128,38 @@ def get_rfo_route(
         created_at=rfo.created_at,
         offers_count=offers_count,
     )
+
+
+@router.get("/{rfo_id}/offers", response_model=RFOOffersResponse)
+def get_rfo_offers(
+    rfo_id: int,
+    buyer=Depends(require_buyer),
+    session: Session = Depends(get_session),
+) -> RFOOffersResponse:
+    rfo = session.get(RFO, rfo_id)
+    if not rfo:
+        raise HTTPException(status_code=404, detail="RFO not found")
+    if rfo.buyer_id != buyer.id:
+        raise HTTPException(status_code=403, detail="Buyer does not own this RFO")
+
+    offers = session.exec(select(Offer).where(Offer.rfo_id == rfo_id)).all()
+    items = [
+        OfferPublic(
+            id=offer.id,
+            rfo_id=offer.rfo_id,
+            vendor_id=offer.vendor_id,
+            price_amount=offer.price_amount,
+            currency=offer.currency,
+            delivery_eta_days=offer.delivery_eta_days,
+            warranty_months=offer.warranty_months,
+            return_days=offer.return_days,
+            stock=offer.stock,
+            metadata=offer.metadata_ or {},
+            created_at=offer.created_at,
+        )
+        for offer in offers
+    ]
+    return RFOOffersResponse(rfo_id=rfo.id, offers=items)
 
 
 @router.get("/{rfo_id}/best", response_model=BestOffersResponse)

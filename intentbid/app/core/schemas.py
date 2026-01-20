@@ -200,6 +200,11 @@ class OfferPublic(BaseModel):
     created_at: datetime
 
 
+class RFOOffersResponse(BaseModel):
+    rfo_id: int
+    offers: list[OfferPublic]
+
+
 class BestOffer(BaseModel):
     offer_id: int
     vendor_id: int
