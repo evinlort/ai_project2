@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IntentBid Aggregator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Work+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f7f4ec;
+        --bg-2: #f0f7f3;
+        --ink: #1b1b1b;
+        --muted: #5f5a55;
+        --accent: #e07a2f;
+        --accent-dark: #be5f1a;
+        --accent-2: #1d6b5c;
+        --card: #ffffff;
+        --stroke: rgba(27, 27, 27, 0.08);
+        --shadow: 0 22px 50px rgba(27, 27, 27, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Work Sans", sans-serif;
+        color: var(--ink);
+        background: radial-gradient(circle at 15% 10%, rgba(224, 122, 47, 0.2), transparent 45%),
+          radial-gradient(circle at 80% 15%, rgba(29, 107, 92, 0.18), transparent 40%),
+          linear-gradient(120deg, var(--bg) 0%, var(--bg-2) 100%);
+        min-height: 100vh;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 28px 48px;
+      }
+
+      .logo {
+        font-family: "Sora", sans-serif;
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 0.04em;
+      }
+
+      nav a {
+        margin-left: 18px;
+        text-decoration: none;
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      nav a:hover {
+        color: var(--accent);
+      }
+
+      .hero {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px 48px 64px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 32px;
+        align-items: center;
+      }
+
+      .eyebrow {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3em;
+        color: var(--accent-2);
+        font-weight: 600;
+      }
+
+      h1 {
+        font-family: "Sora", sans-serif;
+        font-size: clamp(32px, 4vw, 52px);
+        line-height: 1.1;
+        margin: 16px 0;
+      }
+
+      .lead {
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.6;
+      }
+
+      .cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .btn {
+        padding: 12px 20px;
+        border-radius: 999px;
+        border: none;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn.primary {
+        background: var(--accent);
+        color: #fffaf4;
+        box-shadow: 0 10px 20px rgba(224, 122, 47, 0.3);
+      }
+
+      .btn.primary:hover {
+        background: var(--accent-dark);
+      }
+
+      .btn.ghost {
+        border: 1px solid var(--stroke);
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .hero-panel {
+        background: var(--card);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(27, 27, 27, 0.05);
+      }
+
+      .panel-title {
+        font-family: "Sora", sans-serif;
+        font-size: 20px;
+        margin: 0 0 12px;
+      }
+
+      .flow {
+        display: grid;
+        gap: 16px;
+        margin: 24px 0 0;
+      }
+
+      .flow-step {
+        padding: 16px;
+        border-radius: 16px;
+        background: rgba(29, 107, 92, 0.08);
+      }
+
+      .flow-step strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .section {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 48px 72px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: 20px;
+        padding: 22px;
+        box-shadow: 0 16px 30px rgba(27, 27, 27, 0.08);
+        border: 1px solid rgba(27, 27, 27, 0.06);
+      }
+
+      .card h3 {
+        margin-top: 0;
+        font-family: "Sora", sans-serif;
+      }
+
+      .tag {
+        display: inline-flex;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(224, 122, 47, 0.15);
+        color: var(--accent-dark);
+        font-weight: 600;
+        font-size: 12px;
+      }
+
+      .note {
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .fade-in {
+        animation: rise 0.8s ease both;
+      }
+
+      .flow-step:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+
+      .flow-step:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 720px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 24px;
+        }
+
+        .hero,
+        .section {
+          padding: 24px;
+        }
+
+        nav a {
+          margin-left: 0;
+          margin-right: 12px;
+        }
+
+        .cta {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">IntentBid</div>
+      <nav>
+        <a href="/buyer/rfos/new">Create request</a>
+        <a href="/buyer/rfos">My requests</a>
+        <a href="/dashboard/login">Vendor login</a>
+        <a href="/ru/">RU</a>
+      </nav>
+    </header>
+
+    <main class="hero">
+      <section class="fade-in">
+        <div class="eyebrow">Aggregator for buyers + vendors</div>
+        <h1>Turn every buyer request into ranked vendor offers.</h1>
+        <p class="lead">
+          IntentBid connects Buyer request (RFO) demand with vendor offers in one flow: publish the need,
+          collect bids, and surface the best offers instantly across UI and API.
+        </p>
+        <div class="cta">
+          <a class="btn primary" href="/buyer/register">Get buyer API key</a>
+          <a class="btn ghost" href="/dashboard/login">Enter vendor console</a>
+        </div>
+        <p class="note" style="margin-top: 16px;">
+          UI workflows use the same endpoints your automation will call.
+        </p>
+      </section>
+
+      <section class="hero-panel fade-in">
+        <span class="tag">How it works</span>
+        <h2 class="panel-title">Buyer request (RFO) to vendor offer pipeline</h2>
+        <div class="flow">
+          <div class="flow-step fade-in">
+            <strong>1. Buyer request</strong>
+            Share constraints, budget, and delivery timelines.
+          </div>
+          <div class="flow-step fade-in">
+            <strong>2. Vendor offers</strong>
+            Vendors submit offers with pricing, warranty, and stock data.
+          </div>
+          <div class="flow-step fade-in">
+            <strong>3. Best offers</strong>
+            Ranking returns the most competitive options with explanations.
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <section class="section">
+      <div class="grid">
+        <article class="card fade-in">
+          <span class="tag">For buyers</span>
+          <h3>Own the request lifecycle</h3>
+          <p class="note">
+            Track status, review offer counts, and review scoring from one place. Export results
+            directly from the API for procurement workflows.
+          </p>
+        </article>
+        <article class="card fade-in">
+          <span class="tag">For vendors</span>
+          <h3>Respond to qualified demand</h3>
+          <p class="note">
+            See open RFOs, submit offers quickly, and monitor award outcomes with the same data
+            the buyer sees.
+          </p>
+        </article>
+        <article class="card fade-in">
+          <span class="tag">For teams</span>
+          <h3>Automation ready</h3>
+          <p class="note">
+            Use buyer and vendor endpoints programmatically, or stay in the UI. Both share the same
+            vocabulary and endpoints for consistency.
+          </p>
+        </article>
+      </div>
+    </section>
+  </body>
+</html>
