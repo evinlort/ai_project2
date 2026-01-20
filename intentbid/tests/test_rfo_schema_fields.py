@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 
 def _base_payload():
@@ -58,6 +58,24 @@ def test_rfo_create_rejects_negative_budget_max(client):
 def test_rfo_create_rejects_non_positive_deadline(client):
     payload = _base_payload()
     payload["delivery_deadline_days"] = 0
+
+    response = client.post("/v1/rfo", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_rfo_create_rejects_empty_title(client):
+    payload = _base_payload()
+    payload["title"] = "   "
+
+    response = client.post("/v1/rfo", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_rfo_create_rejects_past_expires_at(client):
+    payload = _base_payload()
+    payload["expires_at"] = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
 
     response = client.post("/v1/rfo", json=payload)
 

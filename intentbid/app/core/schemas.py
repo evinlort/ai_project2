@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class VendorRegisterRequest(BaseModel):
@@ -88,6 +88,25 @@ class RFOCreate(BaseModel):
     location: str | None = None
     expires_at: datetime | None = None
 
+    @field_validator("title")
+    @classmethod
+    def _title_not_blank(cls, value: str | None) -> str | None:
+        if value is not None and not value.strip():
+            raise ValueError("Title cannot be empty")
+        return value
+
+    @field_validator("expires_at")
+    @classmethod
+    def _expires_at_in_future(cls, value: datetime | None) -> datetime | None:
+        if value is None:
+            return value
+        resolved = value
+        if resolved.tzinfo is None:
+            resolved = resolved.replace(tzinfo=timezone.utc)
+        if resolved <= datetime.now(timezone.utc):
+            raise ValueError("expires_at must be in the future")
+        return value
+
 
 class RFOUpdateRequest(BaseModel):
     category: str | None = None
@@ -101,6 +120,25 @@ class RFOUpdateRequest(BaseModel):
     quantity: int | None = Field(default=None, gt=0)
     location: str | None = None
     expires_at: datetime | None = None
+
+    @field_validator("title")
+    @classmethod
+    def _title_not_blank(cls, value: str | None) -> str | None:
+        if value is not None and not value.strip():
+            raise ValueError("Title cannot be empty")
+        return value
+
+    @field_validator("expires_at")
+    @classmethod
+    def _expires_at_in_future(cls, value: datetime | None) -> datetime | None:
+        if value is None:
+            return value
+        resolved = value
+        if resolved.tzinfo is None:
+            resolved = resolved.replace(tzinfo=timezone.utc)
+        if resolved <= datetime.now(timezone.utc):
+            raise ValueError("expires_at must be in the future")
+        return value
 
 
 class RFOCreateResponse(BaseModel):
