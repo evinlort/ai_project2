@@ -147,6 +147,38 @@ Check current vendor (requires `X-API-Key`):
 curl http://localhost:8000/v1/vendors/me -H "X-API-Key: <api_key>"
 ```
 
+## Automation guide for robots and agents
+
+Automate the workflow with HTTP or the SDK. Typical bot flow: list requests, submit offers, fetch rankings.
+
+HTTP (curl):
+
+```bash
+curl "http://localhost:8000/v1/rfo?status=OPEN&limit=5"
+curl -X POST http://localhost:8000/v1/offers \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: <api_key>" \
+  -d '{"rfo_id": 1, "price_amount": 109.99, "currency": "USD", "delivery_eta_days": 2}'
+curl http://localhost:8000/v1/buyers/rfo/1/ranking -H "X-Buyer-API-Key: <buyer_key>"
+```
+
+SDK (Python):
+
+```python
+from intentbid.sdk import IntentBidClient
+
+client = IntentBidClient(base_url="http://localhost:8000", api_key="<vendor_key>")
+rfos = client.list_rfos(status="OPEN", limit=5)
+client.submit_offer({"rfo_id": 1, "price_amount": 109.99, "currency": "USD", "delivery_eta_days": 2})
+
+buyer = client.register_buyer("Demo Buyer")
+ranking = client.get_buyer_ranking(1, buyer["api_key"])
+```
+
+Limits: offer throttles are controlled by `settings.max_offers_per_vendor_rfo` and
+`settings.offer_cooldown_seconds` in `intentbid.app.core.config`; monthly plan caps are enforced by
+`PlanLimit` and return `429 Plan limit exceeded` when exceeded.
+
 ## Access control & onboarding
 
 - `POST /v1/vendors/keys` creates a new API key for the logged-in vendor; the raw key is returned once while the database stores a hashed copy and tracks `last_used_at`.
@@ -425,6 +457,38 @@ curl "http://localhost:8000/v1/rfo/1/best?top_k=3"
 ```bash
 curl http://localhost:8000/v1/vendors/me -H "X-API-Key: <api_key>"
 ```
+
+## Гид по автоматизации для роботов и агентов
+
+Автоматизируйте поток через HTTP или SDK. Типичный сценарий: list requests, submit offers, fetch rankings.
+
+HTTP (curl):
+
+```bash
+curl "http://localhost:8000/v1/rfo?status=OPEN&limit=5"
+curl -X POST http://localhost:8000/v1/offers \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: <api_key>" \
+  -d '{"rfo_id": 1, "price_amount": 109.99, "currency": "USD", "delivery_eta_days": 2}'
+curl http://localhost:8000/v1/buyers/rfo/1/ranking -H "X-Buyer-API-Key: <buyer_key>"
+```
+
+SDK (Python):
+
+```python
+from intentbid.sdk import IntentBidClient
+
+client = IntentBidClient(base_url="http://localhost:8000", api_key="<vendor_key>")
+rfos = client.list_rfos(status="OPEN", limit=5)
+client.submit_offer({"rfo_id": 1, "price_amount": 109.99, "currency": "USD", "delivery_eta_days": 2})
+
+buyer = client.register_buyer("Demo Buyer")
+ranking = client.get_buyer_ranking(1, buyer["api_key"])
+```
+
+Лимиты: ограничители офферов задаются `settings.max_offers_per_vendor_rfo` и
+`settings.offer_cooldown_seconds` из `intentbid.app.core.config`; месячные лимиты тарифов контролируются
+`PlanLimit` и возвращают `429 Plan limit exceeded`, когда лимит исчерпан.
 
 ## Доступ и онбординг
 

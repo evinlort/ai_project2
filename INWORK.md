@@ -49,3 +49,4 @@
 - Update the Postman collection with new endpoints: Added buyer/vendor list, profile, match, ranking, and update requests with expanded buyer request payload examples.
 - Update demo data seeding for buyers, requests, and profiles: Added buyer records, vendor profiles, and explicit request fields with sample locations and expiry dates, plus buyer key output.
 - Update the vendor simulator to use list endpoints: Switched vendor simulator to pull open requests and matches via API list endpoints before submitting offers.
+- Add an automation guide for robots and agents: Added README automation guide (EN/RU) with curl/SDK examples and limit notes plus a README test to lock the content.
