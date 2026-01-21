@@ -19,7 +19,7 @@ logger = logging.getLogger("intentbid")
 metrics = MetricsCollector()
 app.middleware("http")(request_middleware(metrics, logger))
 
-TEMPLATES_DIR = Path(__file__).resolve().parents[1] / "templates"
+TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 app.include_router(buyers_router)
