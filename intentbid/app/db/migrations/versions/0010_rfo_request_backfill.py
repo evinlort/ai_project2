@@ -20,7 +20,7 @@ def _backfill_postgres() -> None:
         UPDATE rfo
         SET budget_max = (constraints->>'budget_max')::double precision
         WHERE budget_max IS NULL
-          AND constraints ? 'budget_max'
+          AND constraints->>'budget_max' IS NOT NULL
         """
     )
     op.execute(
@@ -28,7 +28,7 @@ def _backfill_postgres() -> None:
         UPDATE rfo
         SET delivery_deadline_days = (constraints->>'delivery_deadline_days')::integer
         WHERE delivery_deadline_days IS NULL
-          AND constraints ? 'delivery_deadline_days'
+          AND constraints->>'delivery_deadline_days' IS NOT NULL
         """
     )
 
