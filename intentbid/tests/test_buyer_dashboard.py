@@ -66,6 +66,24 @@ def test_buyer_rfo_create_sends_explicit_fields(client):
     assert rfo_detail["expires_at"]
 
 
+def test_buyer_rfo_create_rejects_invalid_buyer_key(client):
+    form_data = {
+        "category": "sneakers",
+        "budget_max": 120,
+        "size": 42,
+        "delivery_deadline_days": 3,
+        "w_price": 0.6,
+        "w_delivery": 0.3,
+        "w_warranty": 0.1,
+        "buyer_api_key": "buyer_invalid",
+    }
+
+    response = client.post("/buyer/rfos/new", data=form_data)
+
+    assert response.status_code == 401
+    assert "Invalid buyer API key" in response.text
+
+
 def test_buyer_rfo_check_page_shows_details(client):
     rfo_payload = {
         "category": "sneakers",
