@@ -32,6 +32,7 @@ async def buyer_register(request: Request):
 
     buyer_api_key = payload["api_key"]
     response = templates.TemplateResponse(
+        request,
         "buyer/register.html",
         {"request": request, "buyer_api_key": buyer_api_key},
     )
@@ -43,6 +44,7 @@ async def buyer_register(request: Request):
 def buyer_rfo_create_page(request: Request):
     buyer_api_key = request.cookies.get("buyer_api_key")
     return templates.TemplateResponse(
+        request,
         "buyer/rfo_new.html",
         {"request": request, "buyer_api_key": buyer_api_key},
     )
@@ -144,6 +146,7 @@ async def buyer_rfo_list(request: Request):
                     )
 
     response = templates.TemplateResponse(
+        request,
         "buyer/rfo_list.html",
         {
             "request": request,
@@ -192,6 +195,7 @@ async def buyer_rfo_check(
                         pass
 
     return templates.TemplateResponse(
+        request,
         "buyer/rfo_check.html",
         {
             "request": request,
@@ -249,6 +253,7 @@ async def buyer_best_offers(
                     ]
 
     return templates.TemplateResponse(
+        request,
         "buyer/best_offers.html",
         {
             "request": request,
@@ -327,6 +332,7 @@ async def buyer_scoring(
                             ]
 
     response = templates.TemplateResponse(
+        request,
         "buyer/rfo_scoring.html",
         {
             "request": request,

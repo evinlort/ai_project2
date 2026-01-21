@@ -42,7 +42,7 @@ async def _get_vendor(request: Request, form_api_key: str | None = None):
 
 @router.get("/login", response_class=HTMLResponse)
 def dashboard_login(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html", {"request": request})
 
 
 @router.post("/login", response_class=HTMLResponse)
@@ -53,6 +53,7 @@ async def dashboard_login_submit(
     vendor = await _fetch_vendor(request, api_key)
     if not vendor:
         return templates.TemplateResponse(
+            request,
             "login.html",
             {"request": request, "error": "Invalid API key"},
             status_code=401,
@@ -87,6 +88,7 @@ async def dashboard_rfos(request: Request, session: Session = Depends(get_sessio
             rfo["created_at"] = datetime.fromisoformat(created_at)
 
     response = templates.TemplateResponse(
+        request,
         "rfos.html",
         {"request": request, "rfos": rfos, "vendor": vendor, "api_key": api_key},
     )
@@ -131,6 +133,7 @@ async def dashboard_rfo_detail(
     ]
 
     response = templates.TemplateResponse(
+        request,
         "rfo_detail.html",
         {
             "request": request,
@@ -206,6 +209,7 @@ async def dashboard_submit_offer(
             ]
 
             response = templates.TemplateResponse(
+                request,
                 "rfo_detail.html",
                 {
                     "request": request,
@@ -251,6 +255,7 @@ async def dashboard_offers(request: Request, session: Session = Depends(get_sess
         )
 
     response = templates.TemplateResponse(
+        request,
         "offers.html",
         {
             "request": request,
@@ -272,6 +277,7 @@ async def dashboard_api_list(request: Request, session: Session = Depends(get_se
 
     api_docs = list_api_docs()
     response = templates.TemplateResponse(
+        request,
         "api_list.html",
         {"request": request, "api_docs": api_docs, "api_key": api_key},
     )
@@ -296,6 +302,7 @@ async def dashboard_api_detail(
         raise HTTPException(status_code=404, detail=str(exc))
 
     response = templates.TemplateResponse(
+        request,
         "api_detail.html",
         {"request": request, "doc": doc, "api_key": api_key},
     )
