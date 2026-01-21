@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import Column, JSON, String
+from sqlalchemy.types import DateTime, TypeDecorator
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -53,6 +54,25 @@ class VendorProfile(SQLModel, table=True):
     min_order_value: Optional[float] = Field(default=None, index=True)
 
     vendor: Optional[Vendor] = Relationship(back_populates="profile")
+
+
+class UTCDateTime(TypeDecorator):
+    impl = DateTime
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value
+        return value.astimezone(timezone.utc).replace(tzinfo=None)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value
 
 
 class EventOutbox(SQLModel, table=True):
@@ -127,7 +147,9 @@ class RFO(SQLModel, table=True):
     delivery_deadline_days: Optional[int] = Field(default=None, index=True)
     quantity: Optional[int] = Field(default=None, index=True)
     location: Optional[str] = Field(default=None, index=True)
-    expires_at: Optional[datetime] = Field(default=None, index=True)
+    expires_at: Optional[datetime] = Field(
+        default=None, sa_column=Column(UTCDateTime(), index=True)
+    )
     constraints: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     preferences: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     status: str = Field(default="OPEN", index=True)
@@ -139,7 +161,10 @@ class RFO(SQLModel, table=True):
     weights: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-    offers: List["Offer"] = Relationship(back_populates="rfo")
+    offers: List["Offer"] = Relationship(
+        back_populates="rfo",
+        sa_relationship_kwargs={"foreign_keys": "Offer.rfo_id"},
+    )
     buyer: Optional[Buyer] = Relationship(back_populates="rfos")
 
 
@@ -176,4 +201,7 @@ class Offer(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     vendor: Optional[Vendor] = Relationship(back_populates="offers")
-    rfo: Optional[RFO] = Relationship(back_populates="offers")
+    rfo: Optional[RFO] = Relationship(
+        back_populates="offers",
+        sa_relationship_kwargs={"foreign_keys": "Offer.rfo_id"},
+    )
