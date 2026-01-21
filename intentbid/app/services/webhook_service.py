@@ -15,6 +15,19 @@ def register_vendor_webhook(session: Session, vendor_id: int, url: str) -> Vendo
     session.add(webhook)
     session.commit()
     session.refresh(webhook)
+    pending_events = session.exec(
+        select(EventOutbox).where(
+            EventOutbox.vendor_id == vendor_id,
+            EventOutbox.status == "pending",
+            EventOutbox.created_at <= webhook.created_at,
+        )
+    ).all()
+    if pending_events:
+        for event in pending_events:
+            event.status = "delivered"
+            event.delivered_at = webhook.created_at
+            session.add(event)
+        session.commit()
     return webhook
 
 
