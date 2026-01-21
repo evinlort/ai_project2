@@ -6,53 +6,115 @@
   <h2>Create a new RFO</h2>
   <p class="muted">Buyer request (RFO) and Vendor offer terminology keeps the dashboard aligned.</p>
   <p class="muted">Define constraints and scoring weights before vendors respond.</p>
+  {% if error %}
+  <p class="notice error">{{ error }}</p>
+  {% endif %}
   <form method="post">
     <label for="buyer_api_key">Buyer API key (optional)</label>
     <input
       id="buyer_api_key"
       name="buyer_api_key"
       type="text"
-      value="{{ buyer_api_key or "" }}"
+      value="{{ form.buyer_api_key|default(buyer_api_key, true) }}"
       placeholder="Paste your buyer key"
     />
 
     <label for="title">Title</label>
-    <input id="title" name="title" type="text" placeholder="Bulk sneaker order" />
+    <input
+      id="title"
+      name="title"
+      type="text"
+      placeholder="Bulk sneaker order"
+      value="{{ form.title|default('', true) }}"
+    />
 
     <label for="summary">Summary</label>
-    <textarea id="summary" name="summary" rows="3" placeholder="Share details buyers care about."></textarea>
+    <textarea id="summary" name="summary" rows="3" placeholder="Share details buyers care about.">{{ form.summary|default('', true) }}</textarea>
 
     <label for="category">Category</label>
-    <input id="category" name="category" type="text" placeholder="sneakers" required />
+    <input
+      id="category"
+      name="category"
+      type="text"
+      placeholder="sneakers"
+      value="{{ form.category|default('', true) }}"
+      required
+    />
 
     <div class="grid two">
       <div class="stack">
         <label for="budget_max">Budget max</label>
-        <input id="budget_max" name="budget_max" type="number" min="0" step="0.01" required />
+        <input
+          id="budget_max"
+          name="budget_max"
+          type="number"
+          min="0"
+          step="0.01"
+          value="{{ form.budget_max|default('', true) }}"
+          required
+        />
       </div>
       <div class="stack">
         <label for="currency">Currency</label>
-        <input id="currency" name="currency" type="text" value="USD" />
+        <input
+          id="currency"
+          name="currency"
+          type="text"
+          value="{{ form.currency|default('USD', true) }}"
+        />
       </div>
       <div class="stack">
         <label for="quantity">Quantity</label>
-        <input id="quantity" name="quantity" type="number" min="0" step="1" />
+        <input
+          id="quantity"
+          name="quantity"
+          type="number"
+          min="0"
+          step="1"
+          value="{{ form.quantity|default('', true) }}"
+        />
       </div>
       <div class="stack">
         <label for="location">Location</label>
-        <input id="location" name="location" type="text" placeholder="Berlin" />
+        <input
+          id="location"
+          name="location"
+          type="text"
+          placeholder="Berlin"
+          value="{{ form.location|default('', true) }}"
+        />
       </div>
       <div class="stack">
         <label for="delivery_deadline_days">Delivery deadline (days)</label>
-        <input id="delivery_deadline_days" name="delivery_deadline_days" type="number" min="0" step="1" required />
+        <input
+          id="delivery_deadline_days"
+          name="delivery_deadline_days"
+          type="number"
+          min="0"
+          step="1"
+          value="{{ form.delivery_deadline_days|default('', true) }}"
+          required
+        />
       </div>
       <div class="stack">
         <label for="expires_at">Request deadline</label>
-        <input id="expires_at" name="expires_at" type="datetime-local" />
+        <input
+          id="expires_at"
+          name="expires_at"
+          type="datetime-local"
+          value="{{ form.expires_at|default('', true) }}"
+        />
       </div>
       <div class="stack">
         <label for="size">Size</label>
-        <input id="size" name="size" type="number" min="0" step="1" />
+        <input
+          id="size"
+          name="size"
+          type="number"
+          min="0"
+          step="1"
+          value="{{ form.size|default('', true) }}"
+        />
       </div>
     </div>
 
@@ -60,15 +122,42 @@
     <div class="grid two">
       <div class="stack">
         <label for="w_price">Price weight</label>
-        <input id="w_price" name="w_price" type="number" min="0" max="1" step="0.01" value="0.6" required />
+        <input
+          id="w_price"
+          name="w_price"
+          type="number"
+          min="0"
+          max="1"
+          step="0.01"
+          value="{{ form.w_price|default(0.6, true) }}"
+          required
+        />
       </div>
       <div class="stack">
         <label for="w_delivery">Delivery weight</label>
-        <input id="w_delivery" name="w_delivery" type="number" min="0" max="1" step="0.01" value="0.3" required />
+        <input
+          id="w_delivery"
+          name="w_delivery"
+          type="number"
+          min="0"
+          max="1"
+          step="0.01"
+          value="{{ form.w_delivery|default(0.3, true) }}"
+          required
+        />
       </div>
       <div class="stack">
         <label for="w_warranty">Warranty weight</label>
-        <input id="w_warranty" name="w_warranty" type="number" min="0" max="1" step="0.01" value="0.1" required />
+        <input
+          id="w_warranty"
+          name="w_warranty"
+          type="number"
+          min="0"
+          max="1"
+          step="0.01"
+          value="{{ form.w_warranty|default(0.1, true) }}"
+          required
+        />
       </div>
     </div>
 

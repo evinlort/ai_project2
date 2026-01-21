@@ -43,10 +43,17 @@ async def buyer_register(request: Request):
 @router.get("/rfos/new", response_class=HTMLResponse)
 def buyer_rfo_create_page(request: Request):
     buyer_api_key = request.cookies.get("buyer_api_key")
+    form_values = {
+        "buyer_api_key": buyer_api_key,
+        "currency": "USD",
+        "w_price": 0.6,
+        "w_delivery": 0.3,
+        "w_warranty": 0.1,
+    }
     return templates.TemplateResponse(
         request,
         "buyer/rfo_new.html",
-        {"request": request, "buyer_api_key": buyer_api_key},
+        {"request": request, "buyer_api_key": buyer_api_key, "form": form_values},
     )
 
 
@@ -87,6 +94,22 @@ async def buyer_rfo_create_submit(
         "w_delivery": w_delivery,
         "w_warranty": w_warranty,
     }
+    form_values = {
+        "buyer_api_key": buyer_key,
+        "title": title_value,
+        "summary": summary_value,
+        "category": category,
+        "budget_max": budget_max,
+        "currency": currency_value,
+        "quantity": quantity,
+        "location": location_value,
+        "delivery_deadline_days": delivery_deadline_days,
+        "expires_at": expires_value,
+        "size": size,
+        "w_price": w_price,
+        "w_delivery": w_delivery,
+        "w_warranty": w_warranty,
+    }
     payload = {
         "category": category,
         "constraints": constraints,
@@ -104,7 +127,32 @@ async def buyer_rfo_create_submit(
     transport = httpx.ASGITransport(app=request.app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         api = UiApiClient(client)
-        rfo_response = await api.create_request(payload, buyer_api_key=buyer_key)
+        try:
+            rfo_response = await api.create_request(payload, buyer_api_key=buyer_key)
+        except httpx.HTTPStatusError as exc:
+            try:
+                error_detail = exc.response.json().get("detail")
+            except ValueError:
+                error_detail = exc.response.text
+            if exc.response.status_code == 401:
+                error_message = "Invalid buyer API key."
+            else:
+                error_message = error_detail or "Unable to create request."
+
+            response = templates.TemplateResponse(
+                request,
+                "buyer/rfo_new.html",
+                {
+                    "request": request,
+                    "buyer_api_key": buyer_key,
+                    "form": form_values,
+                    "error": error_message,
+                },
+                status_code=exc.response.status_code,
+            )
+            if buyer_key and buyer_key != request.cookies.get("buyer_api_key"):
+                response.set_cookie("buyer_api_key", buyer_key, httponly=True)
+            return response
     return RedirectResponse(
         url=f"/buyer/rfos/check?rfo_id={rfo_response['rfo_id']}",
         status_code=303,
