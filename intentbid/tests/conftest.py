@@ -37,6 +37,16 @@ def fixture_session(test_engine):
         yield session
 
 
+@pytest.fixture(autouse=True)
+def fixture_override_session(session):
+    def override_get_session():
+        yield session
+
+    app.dependency_overrides[get_session] = override_get_session
+    yield
+    app.dependency_overrides.clear()
+
+
 @pytest.fixture(name="client")
 def fixture_client(session):
     def override_get_session():
@@ -46,3 +56,8 @@ def fixture_client(session):
     client = CompatTestClient(app)
     yield client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(name="anyio_backend")
+def fixture_anyio_backend():
+    return "asyncio"
