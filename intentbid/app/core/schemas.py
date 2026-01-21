@@ -1,7 +1,7 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_serializer, field_validator
 
 
 class VendorRegisterRequest(BaseModel):
@@ -103,7 +103,8 @@ class RFOCreate(BaseModel):
         resolved = value
         if resolved.tzinfo is None:
             resolved = resolved.replace(tzinfo=timezone.utc)
-        if resolved <= datetime.now(timezone.utc):
+        comparison_now = datetime.now(timezone.utc) - timedelta(seconds=5)
+        if resolved <= comparison_now:
             raise ValueError("expires_at must be in the future")
         return value
 
@@ -136,7 +137,8 @@ class RFOUpdateRequest(BaseModel):
         resolved = value
         if resolved.tzinfo is None:
             resolved = resolved.replace(tzinfo=timezone.utc)
-        if resolved <= datetime.now(timezone.utc):
+        comparison_now = datetime.now(timezone.utc) - timedelta(seconds=5)
+        if resolved <= comparison_now:
             raise ValueError("expires_at must be in the future")
         return value
 
@@ -185,6 +187,12 @@ class RFODetailResponse(BaseModel):
     created_at: datetime
     offers_count: int
 
+    @field_serializer("expires_at")
+    def _serialize_expires_at(self, value: datetime | None, _info):
+        if value is None:
+            return None
+        return value.isoformat()
+
 
 class RFOListItem(BaseModel):
     id: int
@@ -199,6 +207,12 @@ class RFOListItem(BaseModel):
     expires_at: datetime | None = None
     status: str
     created_at: datetime
+
+    @field_serializer("expires_at")
+    def _serialize_expires_at(self, value: datetime | None, _info):
+        if value is None:
+            return None
+        return value.isoformat()
 
 
 class RFOListResponse(BaseModel):
