@@ -139,7 +139,7 @@ def update_rfo_route(
     buyer=Depends(require_buyer),
     session: Session = Depends(get_session),
 ) -> RFODetailResponse:
-    updates = payload.dict(exclude_unset=True)
+    updates = payload.model_dump(exclude_unset=True)
     rfo, error = update_rfo(session, rfo_id, buyer.id, updates)
     if error == "not_found":
         raise HTTPException(status_code=404, detail="RFO not found")
