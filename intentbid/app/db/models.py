@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import Column, JSON, String
+from sqlalchemy import Column, ForeignKey, Integer, JSON, String
 from sqlalchemy.types import DateTime, TypeDecorator
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -155,7 +155,12 @@ class RFO(SQLModel, table=True):
     status: str = Field(default="OPEN", index=True)
     status_reason: Optional[str] = None
     awarded_offer_id: Optional[int] = Field(
-        default=None, foreign_key="offer.id", index=True
+        default=None,
+        sa_column=Column(
+            Integer,
+            ForeignKey("offer.id", use_alter=True, name="fk_rfo_awarded_offer_id"),
+            index=True,
+        ),
     )
     scoring_version: str = Field(default="v1")
     weights: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
