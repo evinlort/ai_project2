@@ -203,6 +203,25 @@ Fetch the best offers with scoring explain:
 curl "http://localhost:8000/v1/rfo/1/best?top_k=3"
 ```
 
+If you want RFOs tied to a specific buyer, register a buyer and send `X-Buyer-API-Key`:
+
+```bash
+curl -X POST http://localhost:8000/v1/buyers/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Buyer Inc"}'
+
+curl -X POST http://localhost:8000/v1/rfo \
+  -H "Content-Type: application/json" \
+  -H "X-Buyer-API-Key: <buyer_key>" \
+  -d '{
+    "category": "laptop",
+    "constraints": {"budget_max": 900, "delivery_deadline_days": 5},
+    "preferences": {"w_price": 0.5, "w_delivery": 0.3, "w_warranty": 0.2}
+  }'
+```
+
+Postman collection: `postman/intentbid.postman_collection.json`.
+
 ## Architecture
 
 ### Directory Structure
@@ -303,6 +322,8 @@ Each transition writes to `audit_log` for traceability.
 - Buyer endpoints use `X-Buyer-API-Key`.
 - API keys are generated once and stored hashed in the database.
 - `VendorApiKey` and `BuyerApiKey` track `last_used_at` and revocation.
+- Public endpoints include `POST /v1/rfo`, `GET /v1/rfo`, `GET /v1/rfo/{id}`, and scoring views such as `GET /v1/rfo/{id}/best`.
+- RFO status/scoring updates currently do not enforce auth (`/close`, `/award`, `/reopen`, `/scoring`); consider adding guards if you need stricter controls.
 
 ### Webhooks and Outbox
 
@@ -359,6 +380,7 @@ client.submit_offer({
 - `GET /metrics` exposes an in-memory Prometheus-style counter of HTTP requests.
 - `X-Correlation-Id` is added to responses for traceability.
 - Request logs include method, path, status, duration, and redacted auth headers.
+- Metrics are stored in memory and reset when the API process restarts.
 
 ### Database Schema (High Level)
 
