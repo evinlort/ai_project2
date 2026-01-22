@@ -34,4 +34,5 @@ def downgrade() -> None:
     op.drop_index("ix_audit_log_entity_id", table_name="audit_log")
     op.drop_index("ix_audit_log_entity_type", table_name="audit_log")
     op.drop_table("audit_log")
-    op.drop_column("rfo", "status_reason")
+    with op.batch_alter_table("rfo") as batch_op:
+        batch_op.drop_column("status_reason")

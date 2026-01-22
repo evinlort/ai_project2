@@ -27,5 +27,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_column("rfo", "weights")
-    op.drop_column("rfo", "scoring_version")
+    with op.batch_alter_table("rfo") as batch_op:
+        batch_op.drop_column("weights")
+        batch_op.drop_column("scoring_version")
