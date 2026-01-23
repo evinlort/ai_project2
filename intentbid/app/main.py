@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 
 from intentbid.app.core.observability import MetricsCollector, request_middleware
+from intentbid.app.core.security import https_redirect_middleware
 from intentbid.app.api.routes_buyer_dashboard import router as buyer_dashboard_router
 from intentbid.app.api.routes_buyers import router as buyers_router
 from intentbid.app.api.routes_admin import router as admin_router
@@ -18,6 +19,7 @@ from intentbid.app.api.routes_vendors import router as vendors_router
 app = FastAPI(title="IntentBid API")
 logger = logging.getLogger("intentbid")
 metrics = MetricsCollector()
+app.middleware("http")(https_redirect_middleware())
 app.middleware("http")(request_middleware(metrics, logger))
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"

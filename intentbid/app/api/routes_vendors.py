@@ -131,7 +131,10 @@ def create_vendor_webhook(
     vendor=Depends(require_vendor),
     session: Session = Depends(get_session),
 ) -> VendorWebhookCreateResponse:
-    webhook = register_vendor_webhook(session, vendor.id, payload.url)
+    try:
+        webhook = register_vendor_webhook(session, vendor.id, payload.url)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     return VendorWebhookCreateResponse(
         webhook_id=webhook.id,
         url=webhook.url,

@@ -1,15 +1,26 @@
 import hmac
 import json
 import secrets
+from urllib.parse import urlparse
 from datetime import datetime, timedelta, timezone
 
 import httpx
 from sqlmodel import Session, select
 
+from intentbid.app.core.config import settings
 from intentbid.app.db.models import EventOutbox, VendorWebhook
 
 
+def _validate_webhook_url(url: str) -> None:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError("Invalid webhook URL")
+    if not settings.allow_insecure_webhooks and parsed.scheme != "https":
+        raise ValueError("Webhook URL must use https")
+
+
 def register_vendor_webhook(session: Session, vendor_id: int, url: str) -> VendorWebhook:
+    _validate_webhook_url(url)
     secret = secrets.token_urlsafe(32)
     webhook = VendorWebhook(vendor_id=vendor_id, url=url, secret=secret, is_active=True)
     session.add(webhook)

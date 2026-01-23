@@ -33,7 +33,7 @@ def get_correlation_id(request: Request) -> str:
 def redact_headers(headers: dict[str, str]) -> dict[str, str]:
     redacted = {}
     for key, value in headers.items():
-        if key.lower() in {"authorization", "x-api-key", "x-buyer-api-key"}:
+        if key.lower() in {"authorization", "x-api-key", "x-buyer-api-key", "x-admin-api-key"}:
             redacted[key] = "***"
         else:
             redacted[key] = value

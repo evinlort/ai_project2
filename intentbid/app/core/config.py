@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     offer_cooldown_seconds: int = 0
     admin_api_key: str | None = None
     require_verified_vendors_for_hardware: bool = False
+    rate_limit_requests: int = 1000
+    rate_limit_window_seconds: int = 60
+    require_https: bool = False
+    allow_insecure_webhooks: bool = True
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
