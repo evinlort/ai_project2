@@ -588,6 +588,17 @@ def award_rfo_route(
     _enforce_hardware_buyer(rfo, buyer)
     reason = payload.reason if payload else None
     offer_id = payload.offer_id if payload else None
+    expected_fee = None
+    fee_percent = rfo.constraints.get("transaction_fee_percent") if rfo.constraints else None
+    if offer_id is not None and fee_percent:
+        offer = session.get(Offer, offer_id)
+        if offer:
+            unit_price = offer.unit_price if offer.unit_price is not None else offer.price_amount
+            qty = rfo.quantity
+            if qty is None:
+                qty = sum(int(item.get("quantity", 0)) for item in (rfo.line_items or [])) or None
+            total = unit_price * qty if qty else unit_price
+            expected_fee = round(total * (float(fee_percent) / 100.0), 2)
     if buyer is not None:
         subscription = get_active_buyer_subscription(session, buyer.id)
         if subscription:
@@ -601,6 +612,7 @@ def award_rfo_route(
         reason,
         offer_id=offer_id,
         buyer_id=buyer.id if buyer else None,
+        expected_fee=expected_fee,
     )
     if error == "not_found":
         raise HTTPException(status_code=404, detail="RFO not found")

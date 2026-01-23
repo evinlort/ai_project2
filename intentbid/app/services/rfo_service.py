@@ -211,6 +211,7 @@ def award_rfo(
     reason: str | None = None,
     offer_id: int | None = None,
     buyer_id: int | None = None,
+    expected_fee: float | None = None,
 ) -> tuple[RFO | None, str | None]:
     rfo = session.get(RFO, rfo_id)
     if not rfo:
@@ -234,6 +235,8 @@ def award_rfo(
     metadata = {"reason": reason} if reason else {}
     if offer_id is not None:
         metadata["offer_id"] = offer_id
+    if expected_fee is not None:
+        metadata["expected_fee"] = expected_fee
     _log_rfo_action(session, rfo_id, "award", metadata, buyer_id=buyer_id)
 
     session.commit()
