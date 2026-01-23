@@ -128,6 +128,8 @@ class PlanLimit(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     plan_code: str = Field(index=True)
     max_offers_per_month: int
+    max_rfos_per_month: Optional[int] = Field(default=None)
+    max_awards_per_month: Optional[int] = Field(default=None)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -143,6 +145,22 @@ class Subscription(SQLModel, table=True):
 class UsageEvent(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     vendor_id: int = Field(foreign_key="vendor.id", index=True)
+    event_type: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class BuyerSubscription(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    buyer_id: int = Field(foreign_key="buyer.id", index=True)
+    plan_code: str
+    status: str = Field(default="active", index=True)
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    ended_at: Optional[datetime] = None
+
+
+class BuyerUsageEvent(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    buyer_id: int = Field(foreign_key="buyer.id", index=True)
     event_type: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

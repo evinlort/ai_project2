@@ -37,6 +37,13 @@ from intentbid.app.services.rfo_service import (
     update_rfo,
     update_rfo_scoring_config,
 )
+from intentbid.app.services.billing_service import (
+    get_active_buyer_subscription,
+    get_plan_limit,
+    is_within_buyer_award_limit,
+    is_within_buyer_rfo_limit,
+    record_buyer_usage,
+)
 
 router = APIRouter(prefix="/v1/rfo", tags=["rfo"])
 
@@ -70,6 +77,13 @@ def create_rfo_route(
             return JSONResponse(status_code=cached.status_code, content=cached.response_body)
 
     buyer_id = buyer.id if buyer else None
+    if buyer_id is not None:
+        subscription = get_active_buyer_subscription(session, buyer_id)
+        if subscription:
+            plan = get_plan_limit(session, subscription.plan_code)
+            if plan and plan.max_rfos_per_month is not None:
+                if not is_within_buyer_rfo_limit(session, buyer_id, plan.max_rfos_per_month):
+                    raise HTTPException(status_code=429, detail="Plan limit exceeded")
     rfo = create_rfo(
         session,
         payload.category,
@@ -90,6 +104,8 @@ def create_rfo_route(
         expires_at=payload.expires_at,
     )
     response_body = {"rfo_id": rfo.id, "status": rfo.status}
+    if buyer_id is not None:
+        record_buyer_usage(session, buyer_id=buyer_id, event_type="rfo.created")
     if idempotency_key:
         session.add(
             IdempotencyKey(
@@ -416,6 +432,13 @@ def auto_award_rfo(
     if not payload.opt_in:
         raise HTTPException(status_code=400, detail="Auto-award requires buyer opt-in")
 
+    subscription = get_active_buyer_subscription(session, buyer.id)
+    if subscription:
+        plan = get_plan_limit(session, subscription.plan_code)
+        if plan and plan.max_awards_per_month is not None:
+            if not is_within_buyer_award_limit(session, buyer.id, plan.max_awards_per_month):
+                raise HTTPException(status_code=429, detail="Plan limit exceeded")
+
     _, scored_offers = get_best_offers(session, rfo_id, top_k=1)
     if not scored_offers:
         raise HTTPException(status_code=404, detail="No offers available")
@@ -450,6 +473,8 @@ def auto_award_rfo(
         raise HTTPException(status_code=400, detail="Invalid RFO status transition")
     if error == "invalid_offer":
         raise HTTPException(status_code=400, detail="Invalid offer for this RFO")
+
+    record_buyer_usage(session, buyer_id=buyer.id, event_type="rfo.awarded")
 
     return AutoAwardResponse(
         rfo_id=awarded.id,
@@ -554,6 +579,13 @@ def award_rfo_route(
     _enforce_hardware_buyer(rfo, buyer)
     reason = payload.reason if payload else None
     offer_id = payload.offer_id if payload else None
+    if buyer is not None:
+        subscription = get_active_buyer_subscription(session, buyer.id)
+        if subscription:
+            plan = get_plan_limit(session, subscription.plan_code)
+            if plan and plan.max_awards_per_month is not None:
+                if not is_within_buyer_award_limit(session, buyer.id, plan.max_awards_per_month):
+                    raise HTTPException(status_code=429, detail="Plan limit exceeded")
     rfo, error = award_rfo(
         session,
         rfo_id,
@@ -567,6 +599,8 @@ def award_rfo_route(
         raise HTTPException(status_code=400, detail="Invalid RFO status transition")
     if error == "invalid_offer":
         raise HTTPException(status_code=400, detail="Invalid offer for this RFO")
+    if buyer is not None:
+        record_buyer_usage(session, buyer_id=buyer.id, event_type="rfo.awarded")
     return RFOStatusUpdateResponse(rfo_id=rfo.id, status=rfo.status, reason=rfo.status_reason)
 
 

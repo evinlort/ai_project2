@@ -3,7 +3,13 @@ from datetime import datetime, timezone
 from sqlalchemy import func
 from sqlmodel import Session, select
 
-from intentbid.app.db.models import PlanLimit, Subscription, UsageEvent
+from intentbid.app.db.models import (
+    BuyerSubscription,
+    BuyerUsageEvent,
+    PlanLimit,
+    Subscription,
+    UsageEvent,
+)
 
 
 def get_active_subscription(session: Session, vendor_id: int) -> Subscription | None:
@@ -21,8 +27,25 @@ def get_plan_limit(session: Session, plan_code: str) -> PlanLimit | None:
     ).first()
 
 
+def get_active_buyer_subscription(session: Session, buyer_id: int) -> BuyerSubscription | None:
+    return session.exec(
+        select(BuyerSubscription).where(
+            BuyerSubscription.buyer_id == buyer_id,
+            BuyerSubscription.status == "active",
+        )
+    ).first()
+
+
 def record_usage(session: Session, vendor_id: int, event_type: str) -> UsageEvent:
     event = UsageEvent(vendor_id=vendor_id, event_type=event_type)
+    session.add(event)
+    session.commit()
+    session.refresh(event)
+    return event
+
+
+def record_buyer_usage(session: Session, buyer_id: int, event_type: str) -> BuyerUsageEvent:
+    event = BuyerUsageEvent(buyer_id=buyer_id, event_type=event_type)
     session.add(event)
     session.commit()
     session.refresh(event)
@@ -41,6 +64,32 @@ def is_within_offer_limit(session: Session, vendor_id: int, limit: int) -> bool:
             UsageEvent.vendor_id == vendor_id,
             UsageEvent.event_type == "offer.created",
             UsageEvent.created_at >= month_start,
+        )
+    ).one()
+    return count < limit
+
+
+def is_within_buyer_rfo_limit(session: Session, buyer_id: int, limit: int) -> bool:
+    now = datetime.now(timezone.utc)
+    month_start = _month_start(now)
+    count = session.exec(
+        select(func.count(BuyerUsageEvent.id)).where(
+            BuyerUsageEvent.buyer_id == buyer_id,
+            BuyerUsageEvent.event_type == "rfo.created",
+            BuyerUsageEvent.created_at >= month_start,
+        )
+    ).one()
+    return count < limit
+
+
+def is_within_buyer_award_limit(session: Session, buyer_id: int, limit: int) -> bool:
+    now = datetime.now(timezone.utc)
+    month_start = _month_start(now)
+    count = session.exec(
+        select(func.count(BuyerUsageEvent.id)).where(
+            BuyerUsageEvent.buyer_id == buyer_id,
+            BuyerUsageEvent.event_type == "rfo.awarded",
+            BuyerUsageEvent.created_at >= month_start,
         )
     ).one()
     return count < limit
