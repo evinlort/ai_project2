@@ -464,6 +464,40 @@ def update_rfo_scoring(
     )
 
 
+@router.post("/{rfo_id}/clone", response_model=RFOCreateResponse)
+def clone_rfo(
+    rfo_id: int,
+    buyer=Depends(require_buyer),
+    session: Session = Depends(get_session),
+) -> RFOCreateResponse:
+    rfo = session.get(RFO, rfo_id)
+    if not rfo:
+        raise HTTPException(status_code=404, detail="RFO not found")
+    if rfo.buyer_id != buyer.id:
+        raise HTTPException(status_code=403, detail="Buyer does not own this RFO")
+
+    cloned = create_rfo(
+        session,
+        rfo.category,
+        constraints=dict(rfo.constraints or {}),
+        preferences=dict(rfo.preferences or {}),
+        line_items=list(rfo.line_items or []),
+        compliance=dict(rfo.compliance or {}),
+        scoring_profile=rfo.scoring_profile,
+        quote_deadline_hours=rfo.quote_deadline_hours,
+        buyer_id=buyer.id,
+        title=rfo.title,
+        summary=rfo.summary,
+        budget_max=rfo.budget_max,
+        currency=rfo.currency,
+        delivery_deadline_days=rfo.delivery_deadline_days,
+        quantity=rfo.quantity,
+        location=rfo.location,
+    )
+
+    return RFOCreateResponse(rfo_id=cloned.id, status=cloned.status)
+
+
 @router.post("/{rfo_id}/close", response_model=RFOStatusUpdateResponse)
 def close_rfo_route(
     rfo_id: int,
