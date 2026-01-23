@@ -35,6 +35,43 @@ class IntentBidClient:
         response.raise_for_status()
         return response.json()
 
+    def create_hardware_rfq(
+        self,
+        line_items: list[dict[str, Any]],
+        constraints: dict[str, Any],
+        compliance: dict[str, Any] | None = None,
+        scoring_profile: str | None = None,
+        *,
+        category: str,
+        preferences: dict[str, Any] | None = None,
+        title: str | None = None,
+        summary: str | None = None,
+        buyer_api_key: str | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "category": category,
+            "line_items": line_items,
+            "constraints": constraints,
+        }
+        if preferences is not None:
+            payload["preferences"] = preferences
+        if compliance is not None:
+            payload["compliance"] = compliance
+        if scoring_profile is not None:
+            payload["scoring_profile"] = scoring_profile
+        if title is not None:
+            payload["title"] = title
+        if summary is not None:
+            payload["summary"] = summary
+
+        headers: dict[str, str] | None = None
+        if buyer_api_key:
+            headers = {"X-Buyer-API-Key": buyer_api_key}
+
+        response = self._client.post("/v1/rfo", json=payload, headers=headers)
+        response.raise_for_status()
+        return response.json()
+
     def list_rfos(
         self,
         *,
@@ -76,6 +113,44 @@ class IntentBidClient:
         response = self._client.post("/v1/offers", json=payload, headers=headers)
         response.raise_for_status()
         return response.json()
+
+    def submit_hardware_offer(
+        self,
+        *,
+        rfo_id: int,
+        unit_price: float,
+        currency: str,
+        available_qty: int,
+        lead_time_days: int,
+        condition: str,
+        warranty_months: int,
+        return_days: int,
+        traceability: dict[str, Any],
+        shipping_cost: float | None = None,
+        tax_estimate: float | None = None,
+        valid_until: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "rfo_id": rfo_id,
+            "unit_price": unit_price,
+            "currency": currency,
+            "available_qty": available_qty,
+            "lead_time_days": lead_time_days,
+            "condition": condition,
+            "warranty_months": warranty_months,
+            "return_days": return_days,
+            "traceability": traceability,
+        }
+        if shipping_cost is not None:
+            payload["shipping_cost"] = shipping_cost
+        if tax_estimate is not None:
+            payload["tax_estimate"] = tax_estimate
+        if valid_until is not None:
+            payload["valid_until"] = valid_until
+        if metadata is not None:
+            payload["metadata"] = metadata
+        return self.submit_offer(payload)
 
     def get_vendor_profile(self) -> dict[str, Any]:
         headers = self._auth_headers()
@@ -172,6 +247,12 @@ class IntentBidClient:
     def get_buyer_ranking(self, rfo_id: int, buyer_api_key: str) -> dict[str, Any]:
         headers = {"X-Buyer-API-Key": buyer_api_key}
         response = self._client.get(f"/v1/buyers/rfo/{rfo_id}/ranking", headers=headers)
+        response.raise_for_status()
+        return response.json()
+
+    def get_ranking_explain(self, rfo_id: int, buyer_api_key: str | None = None) -> dict[str, Any]:
+        headers = {"X-Buyer-API-Key": buyer_api_key} if buyer_api_key else None
+        response = self._client.get(f"/v1/rfo/{rfo_id}/ranking/explain", headers=headers)
         response.raise_for_status()
         return response.json()
 

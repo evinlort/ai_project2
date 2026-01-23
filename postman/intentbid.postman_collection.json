@@ -12,8 +12,14 @@
         "header": [],
         "url": {
           "raw": "{{base_url}}/v1/vendors/register",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "vendors", "register"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "vendors",
+            "register"
+          ]
         },
         "body": {
           "mode": "raw",
@@ -28,8 +34,13 @@
         "header": [],
         "url": {
           "raw": "{{base_url}}/v1/rfo",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "rfo"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "rfo"
+          ]
         },
         "body": {
           "mode": "raw",
@@ -42,12 +53,20 @@
       "request": {
         "method": "POST",
         "header": [
-          {"key": "X-API-Key", "value": "{{vendor_api_key}}"}
+          {
+            "key": "X-API-Key",
+            "value": "{{vendor_api_key}}"
+          }
         ],
         "url": {
           "raw": "{{base_url}}/v1/offers",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "offers"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "offers"
+          ]
         },
         "body": {
           "mode": "raw",
@@ -62,9 +81,21 @@
         "header": [],
         "url": {
           "raw": "{{base_url}}/v1/rfo/1/best?top_k=3",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "rfo", "1", "best"],
-          "query": [{"key": "top_k", "value": "3"}]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "rfo",
+            "1",
+            "best"
+          ],
+          "query": [
+            {
+              "key": "top_k",
+              "value": "3"
+            }
+          ]
         }
       }
     },
@@ -75,8 +106,14 @@
         "header": [],
         "url": {
           "raw": "{{base_url}}/v1/buyers/register",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "buyers", "register"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "buyers",
+            "register"
+          ]
         },
         "body": {
           "mode": "raw",
@@ -91,11 +128,22 @@
         "header": [],
         "url": {
           "raw": "{{base_url}}/v1/rfo?status=OPEN&category=sneakers",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "rfo"],
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "rfo"
+          ],
           "query": [
-            {"key": "status", "value": "OPEN"},
-            {"key": "category", "value": "sneakers"}
+            {
+              "key": "status",
+              "value": "OPEN"
+            },
+            {
+              "key": "category",
+              "value": "sneakers"
+            }
           ]
         }
       }
@@ -107,8 +155,14 @@
         "header": [],
         "url": {
           "raw": "{{base_url}}/v1/rfo/1",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "rfo", "1"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "rfo",
+            "1"
+          ]
         }
       }
     },
@@ -117,12 +171,21 @@
       "request": {
         "method": "GET",
         "header": [
-          {"key": "X-Buyer-API-Key", "value": "{{buyer_api_key}}"}
+          {
+            "key": "X-Buyer-API-Key",
+            "value": "{{buyer_api_key}}"
+          }
         ],
         "url": {
           "raw": "{{base_url}}/v1/buyers/rfos",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "buyers", "rfos"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "buyers",
+            "rfos"
+          ]
         }
       }
     },
@@ -131,12 +194,23 @@
       "request": {
         "method": "GET",
         "header": [
-          {"key": "X-Buyer-API-Key", "value": "{{buyer_api_key}}"}
+          {
+            "key": "X-Buyer-API-Key",
+            "value": "{{buyer_api_key}}"
+          }
         ],
         "url": {
           "raw": "{{base_url}}/v1/buyers/rfo/1/ranking",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "buyers", "rfo", "1", "ranking"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "buyers",
+            "rfo",
+            "1",
+            "ranking"
+          ]
         }
       }
     },
@@ -145,12 +219,22 @@
       "request": {
         "method": "GET",
         "header": [
-          {"key": "X-Buyer-API-Key", "value": "{{buyer_api_key}}"}
+          {
+            "key": "X-Buyer-API-Key",
+            "value": "{{buyer_api_key}}"
+          }
         ],
         "url": {
           "raw": "{{base_url}}/v1/rfo/1/offers",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "rfo", "1", "offers"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "rfo",
+            "1",
+            "offers"
+          ]
         }
       }
     },
@@ -159,12 +243,21 @@
       "request": {
         "method": "PATCH",
         "header": [
-          {"key": "X-Buyer-API-Key", "value": "{{buyer_api_key}}"}
+          {
+            "key": "X-Buyer-API-Key",
+            "value": "{{buyer_api_key}}"
+          }
         ],
         "url": {
           "raw": "{{base_url}}/v1/rfo/1",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "rfo", "1"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "rfo",
+            "1"
+          ]
         },
         "body": {
           "mode": "raw",
@@ -177,12 +270,22 @@
       "request": {
         "method": "GET",
         "header": [
-          {"key": "X-API-Key", "value": "{{vendor_api_key}}"}
+          {
+            "key": "X-API-Key",
+            "value": "{{vendor_api_key}}"
+          }
         ],
         "url": {
           "raw": "{{base_url}}/v1/vendors/me/profile",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "vendors", "me", "profile"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "vendors",
+            "me",
+            "profile"
+          ]
         }
       }
     },
@@ -191,12 +294,22 @@
       "request": {
         "method": "PUT",
         "header": [
-          {"key": "X-API-Key", "value": "{{vendor_api_key}}"}
+          {
+            "key": "X-API-Key",
+            "value": "{{vendor_api_key}}"
+          }
         ],
         "url": {
           "raw": "{{base_url}}/v1/vendors/me/profile",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "vendors", "me", "profile"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "vendors",
+            "me",
+            "profile"
+          ]
         },
         "body": {
           "mode": "raw",
@@ -209,15 +322,31 @@
       "request": {
         "method": "GET",
         "header": [
-          {"key": "X-API-Key", "value": "{{vendor_api_key}}"}
+          {
+            "key": "X-API-Key",
+            "value": "{{vendor_api_key}}"
+          }
         ],
         "url": {
           "raw": "{{base_url}}/v1/vendors/me/offers?limit=20&offset=0",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "vendors", "me", "offers"],
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "vendors",
+            "me",
+            "offers"
+          ],
           "query": [
-            {"key": "limit", "value": "20"},
-            {"key": "offset", "value": "0"}
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
           ]
         }
       }
@@ -227,18 +356,145 @@
       "request": {
         "method": "GET",
         "header": [
-          {"key": "X-API-Key", "value": "{{vendor_api_key}}"}
+          {
+            "key": "X-API-Key",
+            "value": "{{vendor_api_key}}"
+          }
         ],
         "url": {
           "raw": "{{base_url}}/v1/vendors/me/matches?limit=20&offset=0",
-          "host": ["{{base_url}}"],
-          "path": ["v1", "vendors", "me", "matches"],
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "vendors",
+            "me",
+            "matches"
+          ],
           "query": [
-            {"key": "limit", "value": "20"},
-            {"key": "offset", "value": "0"}
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
           ]
         }
       }
+    },
+    {
+      "name": "Hardware Procurement",
+      "item": [
+        {
+          "name": "GPU RFQ",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Buyer-API-Key",
+                "value": "{{buyer_api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/rfo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "rfo"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category\": \"GPU\",\n  \"title\": \"H100 SXM5 urgent\",\n  \"summary\": \"Need 4x H100 SXM5 80GB for lab expansion.\",\n  \"constraints\": {\n    \"budget_max\": 250000,\n    \"currency\": \"USD\",\n    \"delivery_deadline_days\": 7,\n    \"region\": \"US\",\n    \"incoterms\": \"DAP\",\n    \"payment_terms\": \"Net 15\",\n    \"traceability_required\": true\n  },\n  \"preferences\": {\n    \"w_price\": 0.4,\n    \"w_delivery\": 0.3,\n    \"w_warranty\": 0.2,\n    \"w_traceability\": 0.1\n  },\n  \"line_items\": [\n    {\n      \"mpn\": \"H100-SXM5-80GB\",\n      \"quantity\": 4,\n      \"required_specs\": {\n        \"vram_gb\": 80,\n        \"form_factor\": \"SXM\"\n      }\n    }\n  ],\n  \"compliance\": {\n    \"export_control_ack\": true,\n    \"country_restrictions\": [\"CN\", \"RU\"]\n  },\n  \"scoring_profile\": \"balanced\"\n}"
+            }
+          }
+        },
+        {
+          "name": "MEMORY RFQ",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Buyer-API-Key",
+                "value": "{{buyer_api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/rfo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "rfo"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category\": \"MEMORY\",\n  \"title\": \"DDR5 ECC RDIMM restock\",\n  \"summary\": \"Urgent replenishment for cluster nodes.\",\n  \"constraints\": {\n    \"budget_max\": 35000,\n    \"currency\": \"USD\",\n    \"delivery_deadline_days\": 5,\n    \"region\": \"US\"\n  },\n  \"preferences\": {\n    \"w_price\": 0.5,\n    \"w_delivery\": 0.3,\n    \"w_warranty\": 0.2\n  },\n  \"line_items\": [\n    {\n      \"mpn\": \"M321R8GA0BB0-CQK\",\n      \"quantity\": 64,\n      \"required_specs\": {\n        \"type\": \"DDR5\",\n        \"capacity_gb\": 64,\n        \"speed_mt_s\": 5600,\n        \"ecc\": true,\n        \"form_factor\": \"RDIMM\"\n      }\n    }\n  ],\n  \"compliance\": {\n    \"export_control_ack\": true\n  },\n  \"scoring_profile\": \"cheapest\"\n}"
+            }
+          }
+        },
+        {
+          "name": "SSD RFQ",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Buyer-API-Key",
+                "value": "{{buyer_api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/rfo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "rfo"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category\": \"SSD\",\n  \"title\": \"Enterprise NVMe 3.84TB\",\n  \"summary\": \"Need 24x enterprise NVMe SSDs for storage refresh.\",\n  \"constraints\": {\n    \"budget_max\": 48000,\n    \"currency\": \"USD\",\n    \"delivery_deadline_days\": 10,\n    \"region\": \"US\"\n  },\n  \"preferences\": {\n    \"w_price\": 0.5,\n    \"w_delivery\": 0.2,\n    \"w_warranty\": 0.2,\n    \"w_traceability\": 0.1\n  },\n  \"line_items\": [\n    {\n      \"mpn\": \"PM9A3-3.84TB\",\n      \"quantity\": 24,\n      \"required_specs\": {\n        \"interface\": \"NVMe\",\n        \"capacity_tb\": 3.84,\n        \"endurance_dwpd\": 1,\n        \"form_factor\": \"U.2\"\n      }\n    }\n  ],\n  \"compliance\": {\n    \"export_control_ack\": true\n  },\n  \"scoring_profile\": \"balanced\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Award Flow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Buyer-API-Key",
+                "value": "{{buyer_api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/rfo/{{rfo_id}}/award",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "rfo",
+                "{{rfo_id}}",
+                "award"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offer_id\": {{offer_id}},\n  \"reason\": \"best_value\"\n}"
+            }
+          }
+        }
+      ]
     }
   ]
 }

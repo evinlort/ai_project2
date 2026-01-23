@@ -190,3 +190,67 @@ def test_sdk_list_matches_sets_api_key_header():
     client = IntentBidClient(base_url="https://example.com", api_key="sk_test", transport=transport)
     response = client.list_matches()
     assert response["items"] == []
+
+
+def test_sdk_create_hardware_rfq_sends_payload():
+    def handler(request):
+        assert request.method == "POST"
+        assert request.url.path == "/v1/rfo"
+        payload = httpx.Response(200, content=request.content).json()
+        assert payload["category"] == "GPU"
+        assert payload["line_items"][0]["mpn"] == "H100-SXM5-80GB"
+        assert payload["constraints"]["budget_max"] == 250000
+        assert payload["compliance"]["export_control_ack"] is True
+        assert payload["scoring_profile"] == "balanced"
+        return httpx.Response(200, json={"rfo_id": 10, "status": "OPEN"})
+
+    transport = httpx.MockTransport(handler)
+    client = IntentBidClient(base_url="https://example.com", transport=transport)
+    response = client.create_hardware_rfq(
+        line_items=[{"mpn": "H100-SXM5-80GB", "quantity": 2}],
+        constraints={"budget_max": 250000, "delivery_deadline_days": 7},
+        compliance={"export_control_ack": True},
+        scoring_profile="balanced",
+        category="GPU",
+    )
+    assert response["status"] == "OPEN"
+
+
+def test_sdk_submit_hardware_offer_sets_api_key_header():
+    def handler(request):
+        assert request.method == "POST"
+        assert request.url.path == "/v1/offers"
+        assert request.headers["X-API-Key"] == "sk_test"
+        payload = httpx.Response(200, content=request.content).json()
+        assert payload["unit_price"] == 90000.0
+        assert payload["lead_time_days"] == 4
+        assert payload["traceability"]["authorized_channel"] is True
+        return httpx.Response(200, json={"offer_id": 12})
+
+    transport = httpx.MockTransport(handler)
+    client = IntentBidClient(base_url="https://example.com", api_key="sk_test", transport=transport)
+    response = client.submit_hardware_offer(
+        rfo_id=5,
+        unit_price=90000.0,
+        currency="USD",
+        available_qty=2,
+        lead_time_days=4,
+        condition="new",
+        warranty_months=12,
+        return_days=30,
+        traceability={"authorized_channel": True, "invoices_available": True, "serials_available": True},
+    )
+    assert response["offer_id"] == 12
+
+
+def test_sdk_get_ranking_explain_includes_buyer_key():
+    def handler(request):
+        assert request.method == "GET"
+        assert request.url.path == "/v1/rfo/7/ranking/explain"
+        assert request.headers["X-Buyer-API-Key"] == "buyer_test"
+        return httpx.Response(200, json={"rfo_id": 7, "offers": []})
+
+    transport = httpx.MockTransport(handler)
+    client = IntentBidClient(base_url="https://example.com", transport=transport)
+    response = client.get_ranking_explain(7, buyer_api_key="buyer_test")
+    assert response["rfo_id"] == 7
