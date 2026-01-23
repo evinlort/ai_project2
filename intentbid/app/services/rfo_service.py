@@ -43,7 +43,11 @@ def _enqueue_rfo_event(
     offer_id: int | None = None,
 ) -> None:
     vendor_ids = session.exec(select(Vendor.id)).all()
-    payload = {"rfo_id": rfo.id, "status": rfo.status}
+    payload = {
+        "rfo_id": rfo.id,
+        "status": rfo.status,
+        "quote_deadline_hours": rfo.quote_deadline_hours,
+    }
     if offer_id is not None:
         payload["offer_id"] = offer_id
 
@@ -59,6 +63,7 @@ def create_rfo(
     line_items: list[dict] | None = None,
     compliance: dict | None = None,
     scoring_profile: str | None = None,
+    quote_deadline_hours: int | None = None,
     buyer_id: int | None = None,
     title: str | None = None,
     summary: str | None = None,
@@ -80,6 +85,7 @@ def create_rfo(
         line_items=line_items or [],
         compliance=compliance or {},
         scoring_profile=scoring_profile,
+        quote_deadline_hours=quote_deadline_hours,
         buyer_id=buyer_id,
         title=title,
         summary=summary,
@@ -296,6 +302,8 @@ def update_rfo(
         rfo.currency = updates["currency"]
     if "quantity" in updates:
         rfo.quantity = updates["quantity"]
+    if "quote_deadline_hours" in updates:
+        rfo.quote_deadline_hours = updates["quote_deadline_hours"]
     if "location" in updates:
         rfo.location = updates["location"]
     if "expires_at" in updates:

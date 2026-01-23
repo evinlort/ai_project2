@@ -165,6 +165,7 @@ class RFO(SQLModel, table=True):
     budget_max: Optional[float] = Field(default=None, index=True)
     currency: Optional[str] = Field(default=None, index=True)
     delivery_deadline_days: Optional[int] = Field(default=None, index=True)
+    quote_deadline_hours: Optional[int] = Field(default=None, index=True)
     quantity: Optional[int] = Field(default=None, index=True)
     location: Optional[str] = Field(default=None, index=True)
     expires_at: Optional[datetime] = Field(
