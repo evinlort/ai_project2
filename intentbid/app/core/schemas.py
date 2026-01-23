@@ -531,6 +531,73 @@ class OfferCreateResponse(BaseModel):
     offer_id: int
 
 
+class OfferUpdateRequest(BaseModel):
+    price_amount: float | None = None
+    unit_price: float | None = None
+    delivery_eta_days: int | None = None
+    lead_time_days: int | None = None
+    available_qty: int | None = None
+    shipping_cost: float | None = None
+    tax_estimate: float | None = None
+    condition: str | None = None
+    warranty_months: int | None = None
+    return_days: int | None = None
+    stock: bool | None = None
+    traceability: Dict[str, Any] | None = None
+    valid_until: datetime | None = None
+    metadata: Dict[str, Any] | None = None
+
+    @model_validator(mode="after")
+    def _require_update_fields(self):
+        if not any(
+            value is not None
+            for value in (
+                self.price_amount,
+                self.unit_price,
+                self.delivery_eta_days,
+                self.lead_time_days,
+                self.available_qty,
+                self.shipping_cost,
+                self.tax_estimate,
+                self.condition,
+                self.warranty_months,
+                self.return_days,
+                self.stock,
+                self.traceability,
+                self.valid_until,
+                self.metadata,
+            )
+        ):
+            raise ValueError("At least one field must be provided")
+        return self
+
+    @field_validator("traceability")
+    @classmethod
+    def _validate_traceability(cls, value: Dict[str, Any] | None):
+        if value is None:
+            return value
+        if not value:
+            return {}
+        return OfferTraceability(**value).model_dump(exclude_unset=True)
+
+    @field_validator("valid_until")
+    @classmethod
+    def _valid_until_in_future(cls, value: datetime | None) -> datetime | None:
+        if value is None:
+            return value
+        resolved = value
+        if resolved.tzinfo is None:
+            resolved = resolved.replace(tzinfo=timezone.utc)
+        if resolved <= datetime.now(timezone.utc) - timedelta(seconds=5):
+            raise ValueError("valid_until must be in the future")
+        return value
+
+
+class OfferUpdateResponse(BaseModel):
+    offer_id: int
+    offer_version: int
+
+
 class OfferPublic(BaseModel):
     id: int
     rfo_id: int

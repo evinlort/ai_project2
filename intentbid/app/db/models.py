@@ -221,6 +221,8 @@ class Offer(SQLModel, table=True):
     warranty_months: int
     return_days: int
     stock: bool
+    offer_version: int = Field(default=1, index=True)
+    updated_at: Optional[datetime] = Field(default=None, sa_column=Column(UTCDateTime()))
     unit_price: Optional[float] = Field(default=None)
     available_qty: Optional[int] = Field(default=None)
     lead_time_days: Optional[int] = Field(default=None)
@@ -242,3 +244,13 @@ class Offer(SQLModel, table=True):
         back_populates="offers",
         sa_relationship_kwargs={"foreign_keys": "Offer.rfo_id"},
     )
+
+
+class OfferRevision(SQLModel, table=True):
+    __tablename__ = "offer_revision"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    offer_id: int = Field(foreign_key="offer.id", index=True)
+    offer_version: int
+    snapshot: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
