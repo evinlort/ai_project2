@@ -6,6 +6,7 @@ from intentbid.app.core.schemas import (
     BestOffer,
     BestOffersResponse,
     OfferPublic,
+    PartCategory,
     RFOCreate,
     RFOCreateResponse,
     RFOExplainResponse,
@@ -34,6 +35,17 @@ from intentbid.app.services.rfo_service import (
 )
 
 router = APIRouter(prefix="/v1/rfo", tags=["rfo"])
+
+HARDWARE_CATEGORIES = {category.value for category in PartCategory}
+
+
+def _enforce_hardware_buyer(rfo: RFO, buyer) -> None:
+    if rfo.category not in HARDWARE_CATEGORIES:
+        return
+    if buyer is None:
+        raise HTTPException(status_code=401, detail="Missing buyer API key")
+    if rfo.buyer_id != buyer.id:
+        raise HTTPException(status_code=403, detail="Buyer does not own this RFO")
 
 
 @router.post("", response_model=RFOCreateResponse)
@@ -317,13 +329,19 @@ def get_rfo_ranking_explain(
 def update_rfo_scoring(
     rfo_id: int,
     payload: RFOScoringUpdateRequest,
+    buyer=Depends(optional_buyer),
     session: Session = Depends(get_session),
 ) -> RFOScoringUpdateResponse:
+    rfo = session.get(RFO, rfo_id)
+    if not rfo:
+        raise HTTPException(status_code=404, detail="RFO not found")
+    _enforce_hardware_buyer(rfo, buyer)
     rfo = update_rfo_scoring_config(
         session,
         rfo_id,
         scoring_version=payload.scoring_version,
         weights=payload.weights,
+        buyer_id=buyer.id if buyer else None,
     )
     if not rfo:
         raise HTTPException(status_code=404, detail="RFO not found")
@@ -338,10 +356,15 @@ def update_rfo_scoring(
 def close_rfo_route(
     rfo_id: int,
     payload: RFOStatusUpdateRequest | None = None,
+    buyer=Depends(optional_buyer),
     session: Session = Depends(get_session),
 ) -> RFOStatusUpdateResponse:
+    rfo = session.get(RFO, rfo_id)
+    if not rfo:
+        raise HTTPException(status_code=404, detail="RFO not found")
+    _enforce_hardware_buyer(rfo, buyer)
     reason = payload.reason if payload else None
-    rfo, error = close_rfo(session, rfo_id, reason)
+    rfo, error = close_rfo(session, rfo_id, reason, buyer_id=buyer.id if buyer else None)
     if error == "not_found":
         raise HTTPException(status_code=404, detail="RFO not found")
     if error == "invalid":
@@ -353,11 +376,22 @@ def close_rfo_route(
 def award_rfo_route(
     rfo_id: int,
     payload: RFOStatusUpdateRequest | None = None,
+    buyer=Depends(optional_buyer),
     session: Session = Depends(get_session),
 ) -> RFOStatusUpdateResponse:
+    rfo = session.get(RFO, rfo_id)
+    if not rfo:
+        raise HTTPException(status_code=404, detail="RFO not found")
+    _enforce_hardware_buyer(rfo, buyer)
     reason = payload.reason if payload else None
     offer_id = payload.offer_id if payload else None
-    rfo, error = award_rfo(session, rfo_id, reason, offer_id=offer_id)
+    rfo, error = award_rfo(
+        session,
+        rfo_id,
+        reason,
+        offer_id=offer_id,
+        buyer_id=buyer.id if buyer else None,
+    )
     if error == "not_found":
         raise HTTPException(status_code=404, detail="RFO not found")
     if error == "invalid":
@@ -371,10 +405,15 @@ def award_rfo_route(
 def reopen_rfo_route(
     rfo_id: int,
     payload: RFOStatusUpdateRequest | None = None,
+    buyer=Depends(optional_buyer),
     session: Session = Depends(get_session),
 ) -> RFOStatusUpdateResponse:
+    rfo = session.get(RFO, rfo_id)
+    if not rfo:
+        raise HTTPException(status_code=404, detail="RFO not found")
+    _enforce_hardware_buyer(rfo, buyer)
     reason = payload.reason if payload else None
-    rfo, error = reopen_rfo(session, rfo_id, reason)
+    rfo, error = reopen_rfo(session, rfo_id, reason, buyer_id=buyer.id if buyer else None)
     if error == "not_found":
         raise HTTPException(status_code=404, detail="RFO not found")
     if error == "invalid":

@@ -145,12 +145,16 @@ def _log_rfo_action(
     rfo_id: int,
     action: str,
     metadata: dict | None = None,
+    buyer_id: int | None = None,
 ) -> None:
+    resolved_metadata = dict(metadata or {})
+    if buyer_id is not None:
+        resolved_metadata["buyer_id"] = buyer_id
     audit = AuditLog(
         entity_type="rfo",
         entity_id=rfo_id,
         action=action,
-        metadata_=metadata or {},
+        metadata_=resolved_metadata,
         created_at=datetime.now(timezone.utc),
     )
     session.add(audit)
@@ -163,6 +167,7 @@ def _transition_rfo(
     to_status: str,
     action: str,
     reason: str | None = None,
+    buyer_id: int | None = None,
 ) -> tuple[RFO | None, str | None]:
     rfo = session.get(RFO, rfo_id)
     if not rfo:
@@ -174,14 +179,21 @@ def _transition_rfo(
     rfo.status_reason = reason
     session.add(rfo)
     metadata = {"reason": reason} if reason else {}
-    _log_rfo_action(session, rfo_id, action, metadata)
+    _log_rfo_action(session, rfo_id, action, metadata, buyer_id=buyer_id)
     session.commit()
     session.refresh(rfo)
     return rfo, None
 
 
-def close_rfo(session: Session, rfo_id: int, reason: str | None = None) -> tuple[RFO | None, str | None]:
-    rfo, error = _transition_rfo(session, rfo_id, {"OPEN"}, "CLOSED", "close", reason)
+def close_rfo(
+    session: Session,
+    rfo_id: int,
+    reason: str | None = None,
+    buyer_id: int | None = None,
+) -> tuple[RFO | None, str | None]:
+    rfo, error = _transition_rfo(
+        session, rfo_id, {"OPEN"}, "CLOSED", "close", reason, buyer_id=buyer_id
+    )
     if not error and rfo:
         _enqueue_rfo_event(session, "rfo.closed", rfo)
     return rfo, error
@@ -192,6 +204,7 @@ def award_rfo(
     rfo_id: int,
     reason: str | None = None,
     offer_id: int | None = None,
+    buyer_id: int | None = None,
 ) -> tuple[RFO | None, str | None]:
     rfo = session.get(RFO, rfo_id)
     if not rfo:
@@ -215,7 +228,7 @@ def award_rfo(
     metadata = {"reason": reason} if reason else {}
     if offer_id is not None:
         metadata["offer_id"] = offer_id
-    _log_rfo_action(session, rfo_id, "award", metadata)
+    _log_rfo_action(session, rfo_id, "award", metadata, buyer_id=buyer_id)
 
     session.commit()
     session.refresh(rfo)
@@ -223,8 +236,13 @@ def award_rfo(
     return rfo, None
 
 
-def reopen_rfo(session: Session, rfo_id: int, reason: str | None = None) -> tuple[RFO | None, str | None]:
-    return _transition_rfo(session, rfo_id, {"CLOSED"}, "OPEN", "reopen", reason)
+def reopen_rfo(
+    session: Session,
+    rfo_id: int,
+    reason: str | None = None,
+    buyer_id: int | None = None,
+) -> tuple[RFO | None, str | None]:
+    return _transition_rfo(session, rfo_id, {"CLOSED"}, "OPEN", "reopen", reason, buyer_id=buyer_id)
 
 
 def update_rfo_scoring_config(
@@ -232,6 +250,7 @@ def update_rfo_scoring_config(
     rfo_id: int,
     scoring_version: str | None = None,
     weights: dict | None = None,
+    buyer_id: int | None = None,
 ) -> RFO | None:
     rfo = session.get(RFO, rfo_id)
     if not rfo:
@@ -241,6 +260,13 @@ def update_rfo_scoring_config(
     if weights is not None:
         rfo.weights = weights
     session.add(rfo)
+    _log_rfo_action(
+        session,
+        rfo_id,
+        "scoring_update",
+        {"scoring_version": rfo.scoring_version, "weights": rfo.weights},
+        buyer_id=buyer_id,
+    )
     session.commit()
     session.refresh(rfo)
     return rfo
@@ -296,7 +322,13 @@ def update_rfo(
     rfo.currency = resolved_currency
 
     session.add(rfo)
-    _log_rfo_action(session, rfo_id, "update", {"fields": sorted(updates.keys())})
+    _log_rfo_action(
+        session,
+        rfo_id,
+        "update",
+        {"fields": sorted(updates.keys())},
+        buyer_id=buyer_id,
+    )
     session.commit()
     session.refresh(rfo)
     return rfo, None
