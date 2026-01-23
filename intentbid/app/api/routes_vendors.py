@@ -63,6 +63,9 @@ def vendor_profile_get(
         regions=profile.regions,
         lead_time_days=profile.lead_time_days,
         min_order_value=profile.min_order_value,
+        on_time_delivery_rate=profile.on_time_delivery_rate,
+        dispute_rate=profile.dispute_rate,
+        verified_distributor=profile.verified_distributor,
     )
 
 
@@ -86,6 +89,9 @@ def vendor_profile_update(
         regions=profile.regions,
         lead_time_days=profile.lead_time_days,
         min_order_value=profile.min_order_value,
+        on_time_delivery_rate=profile.on_time_delivery_rate,
+        dispute_rate=profile.dispute_rate,
+        verified_distributor=profile.verified_distributor,
     )
 
 

@@ -90,6 +90,9 @@ def upsert_vendor_profile(
     regions: list[str],
     lead_time_days: int | None,
     min_order_value: float | None,
+    on_time_delivery_rate: float | None = None,
+    dispute_rate: float | None = None,
+    verified_distributor: bool | None = None,
 ) -> VendorProfile:
     profile = get_vendor_profile(session, vendor_id)
     if not profile:
@@ -99,12 +102,21 @@ def upsert_vendor_profile(
             regions=regions,
             lead_time_days=lead_time_days,
             min_order_value=min_order_value,
+            on_time_delivery_rate=on_time_delivery_rate,
+            dispute_rate=dispute_rate,
+            verified_distributor=verified_distributor or False,
         )
     else:
         profile.categories = categories
         profile.regions = regions
         profile.lead_time_days = lead_time_days
         profile.min_order_value = min_order_value
+        if on_time_delivery_rate is not None:
+            profile.on_time_delivery_rate = on_time_delivery_rate
+        if dispute_rate is not None:
+            profile.dispute_rate = dispute_rate
+        if verified_distributor is not None:
+            profile.verified_distributor = verified_distributor
 
     session.add(profile)
     session.commit()

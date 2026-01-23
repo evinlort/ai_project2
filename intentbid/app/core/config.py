@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     env: str = "dev"
     max_offers_per_vendor_rfo: int = 5
     offer_cooldown_seconds: int = 0
+    admin_api_key: str | None = None
+    require_verified_vendors_for_hardware: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

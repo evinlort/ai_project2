@@ -145,6 +145,33 @@ class VendorProfileResponse(BaseModel):
     regions: list[str]
     lead_time_days: int | None
     min_order_value: float | None
+    on_time_delivery_rate: float | None = None
+    dispute_rate: float | None = None
+    verified_distributor: bool | None = None
+
+
+class VendorVerificationRequest(BaseModel):
+    notes: str | None = None
+
+
+class VendorVerificationResponse(BaseModel):
+    vendor_id: int
+    verification_status: str
+    verification_notes: str | None = None
+    verified_at: datetime | None = None
+
+
+class VendorReputationUpdateRequest(BaseModel):
+    on_time_delivery_rate: float | None = Field(default=None, ge=0, le=1)
+    dispute_rate: float | None = Field(default=None, ge=0, le=1)
+    verified_distributor: bool | None = None
+
+
+class VendorReputationResponse(BaseModel):
+    vendor_id: int
+    on_time_delivery_rate: float | None = None
+    dispute_rate: float | None = None
+    verified_distributor: bool | None = None
 
 
 class BuyerRegisterRequest(BaseModel):

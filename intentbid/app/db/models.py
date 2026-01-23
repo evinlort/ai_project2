@@ -10,6 +10,9 @@ class Vendor(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     api_key_hash: str
+    verification_status: str = Field(default="UNVERIFIED", index=True)
+    verification_notes: Optional[str] = Field(default=None)
+    verified_at: Optional[datetime] = Field(default=None)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     offers: List["Offer"] = Relationship(back_populates="vendor")
@@ -52,6 +55,9 @@ class VendorProfile(SQLModel, table=True):
     regions: List[str] = Field(default_factory=list, sa_column=Column(JSON))
     lead_time_days: Optional[int] = Field(default=None, index=True)
     min_order_value: Optional[float] = Field(default=None, index=True)
+    on_time_delivery_rate: Optional[float] = Field(default=None)
+    dispute_rate: Optional[float] = Field(default=None)
+    verified_distributor: bool = Field(default=False)
 
     vendor: Optional[Vendor] = Relationship(back_populates="profile")
 
