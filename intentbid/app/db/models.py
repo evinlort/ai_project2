@@ -130,6 +130,7 @@ class PlanLimit(SQLModel, table=True):
     max_offers_per_month: int
     max_rfos_per_month: Optional[int] = Field(default=None)
     max_awards_per_month: Optional[int] = Field(default=None)
+    max_priority_rfos_per_month: Optional[int] = Field(default=None)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

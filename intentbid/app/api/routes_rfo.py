@@ -41,6 +41,7 @@ from intentbid.app.services.billing_service import (
     get_active_buyer_subscription,
     get_plan_limit,
     is_within_buyer_award_limit,
+    is_within_buyer_priority_limit,
     is_within_buyer_rfo_limit,
     record_buyer_usage,
 )
@@ -84,6 +85,12 @@ def create_rfo_route(
             if plan and plan.max_rfos_per_month is not None:
                 if not is_within_buyer_rfo_limit(session, buyer_id, plan.max_rfos_per_month):
                     raise HTTPException(status_code=429, detail="Plan limit exceeded")
+            priority_rfq = bool(payload.constraints.get("priority_rfq"))
+            if priority_rfq and plan and plan.max_priority_rfos_per_month is not None:
+                if not is_within_buyer_priority_limit(
+                    session, buyer_id, plan.max_priority_rfos_per_month
+                ):
+                    raise HTTPException(status_code=429, detail="Plan limit exceeded")
     rfo = create_rfo(
         session,
         payload.category,
@@ -106,6 +113,8 @@ def create_rfo_route(
     response_body = {"rfo_id": rfo.id, "status": rfo.status}
     if buyer_id is not None:
         record_buyer_usage(session, buyer_id=buyer_id, event_type="rfo.created")
+        if payload.constraints.get("priority_rfq"):
+            record_buyer_usage(session, buyer_id=buyer_id, event_type="rfo.priority")
     if idempotency_key:
         session.add(
             IdempotencyKey(

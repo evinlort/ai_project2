@@ -95,6 +95,19 @@ def is_within_buyer_award_limit(session: Session, buyer_id: int, limit: int) -> 
     return count < limit
 
 
+def is_within_buyer_priority_limit(session: Session, buyer_id: int, limit: int) -> bool:
+    now = datetime.now(timezone.utc)
+    month_start = _month_start(now)
+    count = session.exec(
+        select(func.count(BuyerUsageEvent.id)).where(
+            BuyerUsageEvent.buyer_id == buyer_id,
+            BuyerUsageEvent.event_type == "rfo.priority",
+            BuyerUsageEvent.created_at >= month_start,
+        )
+    ).one()
+    return count < limit
+
+
 def get_offer_usage_summary(session: Session, vendor_id: int) -> dict | None:
     subscription = get_active_subscription(session, vendor_id)
     if not subscription:
