@@ -196,7 +196,7 @@ Limits: offer throttles are controlled by `settings.max_offers_per_vendor_rfo` a
 
 - `POST /v1/vendors/keys` creates a new API key for the logged-in vendor; the raw key is returned once while the database stores a hashed copy and tracks `last_used_at`.
 - `POST /v1/vendors/keys/{key_id}/revoke` updates the key status to `revoked` and records `revoked_at` so rotated keys can be retired without affecting other tokens.
-- `POST /v1/vendors/webhooks` registers a webhook that receives signed `offer.created` events, while `EventOutbox` ensures retries, backoff, and `last_delivery_at` updates even if deliveries fail temporarily.
+- `POST /v1/vendors/webhooks` registers a webhook that receives signed events (`rfo.created`, `offer.created`, `rfo.closed`, `rfo.awarded`), while `EventOutbox` ensures retries, backoff, and `last_delivery_at` updates even if deliveries fail temporarily.
 - `GET /v1/vendors/onboarding/status` summarizes whether the vendor has an active API key and webhook so dashboards can highlight next steps.
 
 ## Buyer access & ranking
@@ -218,7 +218,7 @@ Limits: offer throttles are controlled by `settings.max_offers_per_vendor_rfo` a
 
 ## Notifications & webhooks
 
-- When an offer is created, `enqueue_event` writes a signed `offer.created` payload to `EventOutbox`; `dispatch_outbox` (e.g., from a worker or cron) polls pending events, signs them with the webhook secret, and retries with exponential backoff before moving to dead lettering.
+- `enqueue_event` writes signed webhook payloads to `EventOutbox` for `rfo.created`, `offer.created`, `rfo.closed`, and `rfo.awarded`; `dispatch_outbox` (e.g., from a worker or cron) polls pending events, signs them with the webhook secret, and retries with exponential backoff before moving to dead lettering.
 - Webhook deliveries include the `X-IntentBid-Signature` header so receivers can verify authenticity and vendors can manage retry metrics via `last_delivery_at`.
 
 ## Scoring logic
@@ -520,7 +520,7 @@ ranking = client.get_buyer_ranking(1, buyer["api_key"])
 
 - `POST /v1/vendors/keys` создает новый API-ключ для текущего продавца; сырый ключ возвращается один раз, а в базе сохраняется хеш и обновляется `last_used_at`.
 - `POST /v1/vendors/keys/{key_id}/revoke` переводит ключ в статус `revoked` и фиксирует `revoked_at`, чтобы новые токены переключались без влияния на другие.
-- `POST /v1/vendors/webhooks` регистрирует webhook для событий `offer.created`, а `EventOutbox` обрабатывает ретраи, backoff и обновление `last_delivery_at` даже при временных отказах доставки.
+- `POST /v1/vendors/webhooks` регистрирует webhook для событий `rfo.created`, `offer.created`, `rfo.closed`, `rfo.awarded`, а `EventOutbox` обрабатывает ретраи, backoff и обновление `last_delivery_at` даже при временных отказах доставки.
 - `GET /v1/vendors/onboarding/status` показывает, есть ли у продавца активный API-ключ и webhook, чтобы UI мог подсказать следующий шаг.
 
 ## Доступ покупателей и ранжирование
@@ -542,7 +542,7 @@ ranking = client.get_buyer_ranking(1, buyer["api_key"])
 
 ## Уведомления и webhook
 
-- После создания оффера `enqueue_event` пишет подписку в `EventOutbox`; `dispatch_outbox` (например, из фонового worker-а) забирает pending события, подписывает данные секретом webhook-а и пытается доставить повторно с backoff, прежде чем пометить как доставленное или dead-letter.
+- `enqueue_event` пишет подписанные события `rfo.created`, `offer.created`, `rfo.closed`, `rfo.awarded` в `EventOutbox`; `dispatch_outbox` (например, из фонового worker-а) забирает pending события, подписывает данные секретом webhook-а и пытается доставить повторно с backoff, прежде чем пометить как доставленное или dead-letter.
 - В заголовке `X-IntentBid-Signature` передается подпись содержимого, чтобы получатель мог проверить целостность, а продавец видит обновления `last_delivery_at` по каждому webhook-у.
 
 ## Логика скоринга
