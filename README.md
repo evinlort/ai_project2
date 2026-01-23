@@ -17,6 +17,19 @@ Flow:
 
 The UI calls the same API endpoints used by automation.
 
+## Hardware Procurement
+
+IntentBid is being productized for urgent B2B procurement of high-demand compute components where supply is fragmented and quotes are slow.
+
+- Problem: GPU, memory, and enterprise storage shortages create fragmented, slow quoting across distributors and brokers.
+- Supported categories: `gpu`, `memory`, `ssd`, `nic`.
+- Deal cycle promise: quotes in hours, award in a day.
+- Why IntentBid differs: transparent scoring + explain, webhook outbox, Python SDK, and enforceable plan limits.
+- Target ICP:
+  - Buyers: AI startups, labs, SMB data centers, system integrators, MSPs sourcing GPUs/memory/SSD urgently.
+  - Vendors: authorized distributors + vetted brokers with inventory, lead times, and traceability docs.
+- Pilot checklist: see `docs/pilot_checklist.md`.
+
 ## How it works
 
 - Vendor registers and receives a one-time API key (stored hashed).
@@ -327,6 +340,19 @@ IntentBid работает как агрегатор: покупатели пу�
 - Покупатель публикует запрос -> продавцы отправляют офферы -> ранжирование возвращает лучшие офферы.
 
 UI использует те же API эндпоинты, что и автоматизация.
+
+## Аппаратные закупки
+
+IntentBid развивается как продукт для срочных B2B закупок дефицитных вычислительных компонентов, где поставки фрагментированы, а котировки приходят медленно.
+
+- Проблема: дефицит GPU, памяти и enterprise SSD приводит к фрагментированным и медленным котировкам у дистрибьюторов и брокеров.
+- Поддерживаемые категории: `gpu`, `memory`, `ssd`, `nic`.
+- Обещание по циклу сделки: котировки за часы, решение по награждению за день.
+- Почему IntentBid отличается: прозрачный скоринг с explain, outbox webhooks, Python SDK и контролируемые лимиты планов.
+- Целевая аудитория:
+  - Покупатели: AI стартапы, лаборатории, SMB дата-центры, интеграторы, MSP с срочными потребностями в GPU/памяти/SSD.
+  - Продавцы: авторизованные дистрибьюторы и проверенные брокеры с наличием, сроками поставки и документами трассируемости.
+- Чеклист пилота: `docs/pilot_checklist.md`.
 
 ## Как это работает
 
