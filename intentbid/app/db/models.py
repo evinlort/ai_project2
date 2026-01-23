@@ -166,6 +166,9 @@ class RFO(SQLModel, table=True):
     )
     constraints: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     preferences: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    line_items: List[Dict[str, Any]] = Field(default_factory=list, sa_column=Column(JSON))
+    compliance: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    scoring_profile: Optional[str] = Field(default=None)
     status: str = Field(default="OPEN", index=True)
     status_reason: Optional[str] = None
     awarded_offer_id: Optional[int] = Field(
@@ -211,6 +214,14 @@ class Offer(SQLModel, table=True):
     warranty_months: int
     return_days: int
     stock: bool
+    unit_price: Optional[float] = Field(default=None)
+    available_qty: Optional[int] = Field(default=None)
+    lead_time_days: Optional[int] = Field(default=None)
+    shipping_cost: Optional[float] = Field(default=None)
+    tax_estimate: Optional[float] = Field(default=None)
+    condition: Optional[str] = Field(default=None)
+    traceability: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    valid_until: Optional[datetime] = Field(default=None, sa_column=Column(UTCDateTime()))
     status: str = Field(default="submitted", index=True)
     is_awarded: bool = Field(default=False, index=True)
     metadata_: Dict[str, Any] = Field(

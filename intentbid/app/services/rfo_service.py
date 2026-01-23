@@ -11,7 +11,8 @@ def _sync_request_fields(
     constraints: dict | None,
     budget_max: float | None,
     delivery_deadline_days: int | None,
-) -> tuple[dict, float | None, int | None]:
+    currency: str | None,
+) -> tuple[dict, float | None, int | None, str | None]:
     merged_constraints = dict(constraints or {})
 
     resolved_budget_max = budget_max
@@ -26,7 +27,13 @@ def _sync_request_fields(
     else:
         merged_constraints["delivery_deadline_days"] = resolved_deadline
 
-    return merged_constraints, resolved_budget_max, resolved_deadline
+    resolved_currency = currency
+    if resolved_currency is None:
+        resolved_currency = merged_constraints.get("currency")
+    else:
+        merged_constraints["currency"] = resolved_currency
+
+    return merged_constraints, resolved_budget_max, resolved_deadline, resolved_currency
 
 
 def _enqueue_rfo_event(
@@ -49,6 +56,9 @@ def create_rfo(
     category: str,
     constraints: dict,
     preferences: dict,
+    line_items: list[dict] | None = None,
+    compliance: dict | None = None,
+    scoring_profile: str | None = None,
     buyer_id: int | None = None,
     title: str | None = None,
     summary: str | None = None,
@@ -59,19 +69,22 @@ def create_rfo(
     location: str | None = None,
     expires_at: datetime | None = None,
 ) -> RFO:
-    merged_constraints, resolved_budget_max, resolved_deadline = _sync_request_fields(
-        constraints, budget_max, delivery_deadline_days
+    merged_constraints, resolved_budget_max, resolved_deadline, resolved_currency = _sync_request_fields(
+        constraints, budget_max, delivery_deadline_days, currency
     )
 
     rfo = RFO(
         category=category,
         constraints=merged_constraints,
         preferences=preferences,
+        line_items=line_items or [],
+        compliance=compliance or {},
+        scoring_profile=scoring_profile,
         buyer_id=buyer_id,
         title=title,
         summary=summary,
         budget_max=resolved_budget_max,
-        currency=currency,
+        currency=resolved_currency,
         delivery_deadline_days=resolved_deadline,
         quantity=quantity,
         location=location,
@@ -263,16 +276,24 @@ def update_rfo(
         rfo.expires_at = updates["expires_at"]
     if "preferences" in updates:
         rfo.preferences = updates["preferences"]
+    if "line_items" in updates:
+        rfo.line_items = updates["line_items"]
+    if "compliance" in updates:
+        rfo.compliance = updates["compliance"]
+    if "scoring_profile" in updates:
+        rfo.scoring_profile = updates["scoring_profile"]
 
     base_constraints = updates.get("constraints", rfo.constraints)
-    merged_constraints, resolved_budget_max, resolved_deadline = _sync_request_fields(
+    merged_constraints, resolved_budget_max, resolved_deadline, resolved_currency = _sync_request_fields(
         base_constraints,
         updates.get("budget_max", rfo.budget_max),
         updates.get("delivery_deadline_days", rfo.delivery_deadline_days),
+        updates.get("currency", rfo.currency),
     )
     rfo.constraints = merged_constraints
     rfo.budget_max = resolved_budget_max
     rfo.delivery_deadline_days = resolved_deadline
+    rfo.currency = resolved_currency
 
     session.add(rfo)
     _log_rfo_action(session, rfo_id, "update", {"fields": sorted(updates.keys())})
