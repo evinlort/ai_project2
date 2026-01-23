@@ -7,6 +7,16 @@
   <p class="muted">Track how your bids perform across RFOs.</p>
 </section>
 
+{% if plan_usage %}
+<section class="card" style="margin-top: 16px;">
+  <h3>Plan usage</h3>
+  <p class="muted">
+    Plan: {{ plan_usage.plan_code }} • Offers this month: {{ plan_usage.used }} /
+    {{ plan_usage.limit if plan_usage.limit is not none else "Unlimited" }}
+  </p>
+</section>
+{% endif %}
+
 <section class="card" style="margin-top: 24px;">
   {% if offers %}
   <table>

@@ -44,3 +44,27 @@ def is_within_offer_limit(session: Session, vendor_id: int, limit: int) -> bool:
         )
     ).one()
     return count < limit
+
+
+def get_offer_usage_summary(session: Session, vendor_id: int) -> dict | None:
+    subscription = get_active_subscription(session, vendor_id)
+    if not subscription:
+        return None
+
+    now = datetime.now(timezone.utc)
+    month_start = _month_start(now)
+    used = session.exec(
+        select(func.count(UsageEvent.id)).where(
+            UsageEvent.vendor_id == vendor_id,
+            UsageEvent.event_type == "offer.created",
+            UsageEvent.created_at >= month_start,
+        )
+    ).one()
+
+    plan = get_plan_limit(session, subscription.plan_code)
+    limit = plan.max_offers_per_month if plan else None
+    return {
+        "plan_code": subscription.plan_code,
+        "used": used,
+        "limit": limit,
+    }

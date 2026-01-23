@@ -8,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 from sqlmodel import Session
 
 from intentbid.app.db.session import get_session
+from intentbid.app.services.billing_service import get_offer_usage_summary
 from intentbid.app.ui.api_client import UiApiClient
 from intentbid.app.api.api_docs import get_api_doc, list_api_docs
 
@@ -262,6 +263,7 @@ async def dashboard_offers(request: Request, session: Session = Depends(get_sess
             "offers": offer_rows,
             "vendor": vendor,
             "api_key": api_key,
+            "plan_usage": get_offer_usage_summary(session, vendor["vendor_id"]),
         },
     )
     if api_key and api_key != request.cookies.get("api_key"):
