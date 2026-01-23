@@ -174,6 +174,17 @@ class VendorReputationResponse(BaseModel):
     verified_distributor: bool | None = None
 
 
+class AdminSubscriptionRequest(BaseModel):
+    plan_code: str
+    status: str = "active"
+
+
+class AdminSubscriptionResponse(BaseModel):
+    subscription_id: int
+    plan_code: str
+    status: str
+
+
 class BuyerRegisterRequest(BaseModel):
     name: str
 

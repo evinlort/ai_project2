@@ -3,11 +3,14 @@ from sqlmodel import Session
 
 from intentbid.app.core.config import settings
 from intentbid.app.core.schemas import (
+    AdminSubscriptionRequest,
+    AdminSubscriptionResponse,
     VendorReputationResponse,
     VendorReputationUpdateRequest,
     VendorVerificationRequest,
     VendorVerificationResponse,
 )
+from intentbid.app.db.models import Buyer, BuyerSubscription, Subscription, Vendor
 from intentbid.app.db.session import get_session
 from intentbid.app.services.admin_service import (
     set_vendor_verification_status,
@@ -108,4 +111,60 @@ def update_reputation(
         on_time_delivery_rate=profile.on_time_delivery_rate,
         dispute_rate=profile.dispute_rate,
         verified_distributor=profile.verified_distributor,
+    )
+
+
+@router.post(
+    "/buyers/{buyer_id}/subscription",
+    response_model=AdminSubscriptionResponse,
+    dependencies=[Depends(require_admin_api_key)],
+)
+def create_buyer_subscription(
+    buyer_id: int,
+    payload: AdminSubscriptionRequest,
+    session: Session = Depends(get_session),
+) -> AdminSubscriptionResponse:
+    buyer = session.get(Buyer, buyer_id)
+    if not buyer:
+        raise HTTPException(status_code=404, detail="Buyer not found")
+    subscription = BuyerSubscription(
+        buyer_id=buyer_id,
+        plan_code=payload.plan_code,
+        status=payload.status,
+    )
+    session.add(subscription)
+    session.commit()
+    session.refresh(subscription)
+    return AdminSubscriptionResponse(
+        subscription_id=subscription.id,
+        plan_code=subscription.plan_code,
+        status=subscription.status,
+    )
+
+
+@router.post(
+    "/vendors/{vendor_id}/subscription",
+    response_model=AdminSubscriptionResponse,
+    dependencies=[Depends(require_admin_api_key)],
+)
+def create_vendor_subscription(
+    vendor_id: int,
+    payload: AdminSubscriptionRequest,
+    session: Session = Depends(get_session),
+) -> AdminSubscriptionResponse:
+    vendor = session.get(Vendor, vendor_id)
+    if not vendor:
+        raise HTTPException(status_code=404, detail="Vendor not found")
+    subscription = Subscription(
+        vendor_id=vendor_id,
+        plan_code=payload.plan_code,
+        status=payload.status,
+    )
+    session.add(subscription)
+    session.commit()
+    session.refresh(subscription)
+    return AdminSubscriptionResponse(
+        subscription_id=subscription.id,
+        plan_code=subscription.plan_code,
+        status=subscription.status,
     )
