@@ -110,6 +110,20 @@ class EventOutbox(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class IdempotencyKey(SQLModel, table=True):
+    __tablename__ = "idempotency_key"
+    __table_args__ = (
+        UniqueConstraint("key", "endpoint", name="uq_idempotency_key_endpoint"),
+    )
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    key: str = Field(index=True)
+    endpoint: str = Field(index=True)
+    status_code: int
+    response_body: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class PlanLimit(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     plan_code: str = Field(index=True)

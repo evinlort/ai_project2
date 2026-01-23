@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
 
 from intentbid.app.api.deps import optional_buyer, require_buyer
@@ -23,7 +24,7 @@ from intentbid.app.core.schemas import (
     RFOStatusUpdateResponse,
     RFODetailResponse,
 )
-from intentbid.app.db.models import Offer, RFO
+from intentbid.app.db.models import IdempotencyKey, Offer, RFO
 from intentbid.app.db.session import get_session
 from intentbid.app.services.ranking_service import get_best_offers, get_ranked_offers
 from intentbid.app.services.rfo_service import (
@@ -54,9 +55,20 @@ def _enforce_hardware_buyer(rfo: RFO, buyer) -> None:
 @router.post("", response_model=RFOCreateResponse)
 def create_rfo_route(
     payload: RFOCreate,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     buyer=Depends(optional_buyer),
     session: Session = Depends(get_session),
 ) -> RFOCreateResponse:
+    if idempotency_key:
+        cached = session.exec(
+            select(IdempotencyKey).where(
+                IdempotencyKey.key == idempotency_key,
+                IdempotencyKey.endpoint == "POST /v1/rfo",
+            )
+        ).first()
+        if cached:
+            return JSONResponse(status_code=cached.status_code, content=cached.response_body)
+
     buyer_id = buyer.id if buyer else None
     rfo = create_rfo(
         session,
@@ -77,7 +89,18 @@ def create_rfo_route(
         location=payload.location,
         expires_at=payload.expires_at,
     )
-    return RFOCreateResponse(rfo_id=rfo.id, status=rfo.status)
+    response_body = {"rfo_id": rfo.id, "status": rfo.status}
+    if idempotency_key:
+        session.add(
+            IdempotencyKey(
+                key=idempotency_key,
+                endpoint="POST /v1/rfo",
+                status_code=200,
+                response_body=response_body,
+            )
+        )
+        session.commit()
+    return RFOCreateResponse(**response_body)
 
 
 @router.get("", response_model=RFOListResponse)

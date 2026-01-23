@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session
+from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi.responses import JSONResponse
+from sqlmodel import Session, select
 
 from intentbid.app.api.deps import require_vendor
 from intentbid.app.core.config import settings
@@ -12,7 +13,7 @@ from intentbid.app.core.schemas import (
     OfferUpdateResponse,
     PartCategory,
 )
-from intentbid.app.db.models import Offer, OfferRevision, RFO
+from intentbid.app.db.models import IdempotencyKey, Offer, OfferRevision, RFO
 from intentbid.app.db.session import get_session
 from intentbid.app.services.offer_service import create_offer, validate_offer_submission
 
@@ -23,9 +24,20 @@ HARDWARE_CATEGORIES = {category.value for category in PartCategory}
 @router.post("", response_model=OfferCreateResponse)
 def submit_offer(
     payload: OfferCreate,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     session: Session = Depends(get_session),
     vendor=Depends(require_vendor),
 ) -> OfferCreateResponse:
+    if idempotency_key:
+        cached = session.exec(
+            select(IdempotencyKey).where(
+                IdempotencyKey.key == idempotency_key,
+                IdempotencyKey.endpoint == "POST /v1/offers",
+            )
+        ).first()
+        if cached:
+            return JSONResponse(status_code=cached.status_code, content=cached.response_body)
+
     rfo = session.get(RFO, payload.rfo_id)
     if not rfo:
         raise HTTPException(status_code=404, detail="RFO not found")
@@ -43,7 +55,18 @@ def submit_offer(
         raise HTTPException(status_code=status_code or 400, detail=detail or "Invalid offer")
 
     offer = create_offer(session, vendor.id, payload)
-    return OfferCreateResponse(offer_id=offer.id)
+    response_body = {"offer_id": offer.id}
+    if idempotency_key:
+        session.add(
+            IdempotencyKey(
+                key=idempotency_key,
+                endpoint="POST /v1/offers",
+                status_code=200,
+                response_body=response_body,
+            )
+        )
+        session.commit()
+    return OfferCreateResponse(**response_body)
 
 
 @router.patch("/{offer_id}", response_model=OfferUpdateResponse)
