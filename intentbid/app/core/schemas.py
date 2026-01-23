@@ -1,7 +1,91 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict
+from enum import Enum
+from typing import Any, Dict, List
 
-from pydantic import BaseModel, Field, field_serializer, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_serializer, field_validator, model_validator
+
+
+class PartCategory(str, Enum):
+    GPU = "GPU"
+    MEMORY = "MEMORY"
+    SSD = "SSD"
+    NIC = "NIC"
+
+
+class GpuSpecs(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    chip: str
+    vram_gb: int = Field(gt=0)
+    form_factor: str
+    condition: str
+    interface: str
+
+
+class MemorySpecs(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    type: str
+    capacity_gb: int = Field(gt=0)
+    speed_mt_s: int = Field(gt=0)
+    ecc: bool
+    form_factor: str
+
+
+class SsdSpecs(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    interface: str
+    capacity_tb: float = Field(gt=0)
+    endurance_dwpd: float = Field(gt=0)
+    form_factor: str
+
+
+class NicSpecs(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    speed_gbps: int = Field(gt=0)
+    ports: int = Field(gt=0)
+    interface: str
+    rdma: bool
+
+
+_PART_SPECS_BY_CATEGORY = {
+    PartCategory.GPU: GpuSpecs,
+    PartCategory.MEMORY: MemorySpecs,
+    PartCategory.SSD: SsdSpecs,
+    PartCategory.NIC: NicSpecs,
+}
+
+
+class PartCreate(BaseModel):
+    manufacturer: str
+    mpn: str
+    category: PartCategory
+    key_specs: Dict[str, Any]
+    aliases: List[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _validate_key_specs(self):
+        spec_model = _PART_SPECS_BY_CATEGORY.get(self.category)
+        if spec_model is None:
+            raise ValueError(f"Unsupported category: {self.category}")
+        try:
+            spec = spec_model(**self.key_specs)
+        except ValidationError as exc:
+            raise ValueError("Invalid key_specs for category") from exc
+        self.key_specs = spec.model_dump()
+        return self
+
+
+class PartPublic(BaseModel):
+    id: int
+    manufacturer: str
+    mpn: str
+    category: PartCategory
+    key_specs: Dict[str, Any]
+    aliases: List[str]
+    created_at: datetime
 
 
 class VendorRegisterRequest(BaseModel):

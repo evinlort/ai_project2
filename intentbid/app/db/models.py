@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import Column, ForeignKey, Integer, JSON, String
+from sqlalchemy import Column, ForeignKey, Integer, JSON, String, UniqueConstraint
 from sqlalchemy.types import DateTime, TypeDecorator
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -54,6 +54,20 @@ class VendorProfile(SQLModel, table=True):
     min_order_value: Optional[float] = Field(default=None, index=True)
 
     vendor: Optional[Vendor] = Relationship(back_populates="profile")
+
+
+class Part(SQLModel, table=True):
+    __table_args__ = (
+        UniqueConstraint("manufacturer", "mpn", name="uq_part_manufacturer_mpn"),
+    )
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    manufacturer: str = Field(index=True)
+    mpn: str = Field(index=True)
+    category: str = Field(index=True)
+    key_specs: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    aliases: List[str] = Field(default_factory=list, sa_column=Column(JSON))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class UTCDateTime(TypeDecorator):
