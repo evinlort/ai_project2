@@ -7,11 +7,14 @@ from intentbid.app.core.schemas import (
     BestOffersResponse,
     OfferPublic,
     PartCategory,
+    AutoAwardRequest,
+    AutoAwardResponse,
     RFOCreate,
     RFOCreateResponse,
     RFOExplainResponse,
     RFOListItem,
     RFOListResponse,
+    RFORecommendationResponse,
     RFOOffersResponse,
     RFOScoringUpdateRequest,
     RFOScoringUpdateResponse,
@@ -325,6 +328,112 @@ def get_rfo_ranking_explain(
         rfo_id=rfo.id,
         scoring_version=rfo.scoring_version,
         offers=offers,
+    )
+
+
+@router.get("/{rfo_id}/recommendation", response_model=RFORecommendationResponse)
+def get_rfo_recommendation(
+    rfo_id: int,
+    buyer=Depends(optional_buyer),
+    session: Session = Depends(get_session),
+) -> RFORecommendationResponse:
+    rfo = session.get(RFO, rfo_id)
+    if not rfo:
+        raise HTTPException(status_code=404, detail="RFO not found")
+    _enforce_hardware_buyer(rfo, buyer)
+
+    _, scored_offers = get_best_offers(session, rfo_id, top_k=1)
+    if not scored_offers:
+        raise HTTPException(status_code=404, detail="No offers available")
+
+    offer, score, explain = scored_offers[0]
+    rationale = "Highest scoring offer based on the active scoring weights."
+    return RFORecommendationResponse(
+        rfo_id=rfo.id,
+        offer_id=offer.id,
+        score=score,
+        explain=explain,
+        rationale=rationale,
+        offer=OfferPublic(
+            id=offer.id,
+            rfo_id=offer.rfo_id,
+            vendor_id=offer.vendor_id,
+            price_amount=offer.price_amount,
+            unit_price=offer.unit_price,
+            currency=offer.currency,
+            delivery_eta_days=offer.delivery_eta_days,
+            lead_time_days=offer.lead_time_days,
+            available_qty=offer.available_qty,
+            shipping_cost=offer.shipping_cost,
+            tax_estimate=offer.tax_estimate,
+            condition=offer.condition,
+            warranty_months=offer.warranty_months,
+            return_days=offer.return_days,
+            stock=offer.stock,
+            traceability=offer.traceability or {},
+            valid_until=offer.valid_until,
+            metadata=offer.metadata_ or {},
+            created_at=offer.created_at,
+        ),
+    )
+
+
+@router.post("/{rfo_id}/auto_award", response_model=AutoAwardResponse)
+def auto_award_rfo(
+    rfo_id: int,
+    payload: AutoAwardRequest,
+    buyer=Depends(require_buyer),
+    session: Session = Depends(get_session),
+) -> AutoAwardResponse:
+    rfo = session.get(RFO, rfo_id)
+    if not rfo:
+        raise HTTPException(status_code=404, detail="RFO not found")
+    if rfo.buyer_id != buyer.id:
+        raise HTTPException(status_code=403, detail="Buyer does not own this RFO")
+    if not payload.opt_in:
+        raise HTTPException(status_code=400, detail="Auto-award requires buyer opt-in")
+
+    _, scored_offers = get_best_offers(session, rfo_id, top_k=1)
+    if not scored_offers:
+        raise HTTPException(status_code=404, detail="No offers available")
+
+    offer, score, _explain = scored_offers[0]
+    if score <= 0:
+        raise HTTPException(status_code=400, detail="No eligible offers for auto-award")
+    if payload.min_score is not None and score < payload.min_score:
+        raise HTTPException(status_code=400, detail="Top offer score below minimum threshold")
+
+    reason = payload.reason or "auto_award"
+    if rfo.status == "OPEN":
+        closed, error = close_rfo(session, rfo_id, reason, buyer_id=buyer.id)
+        if error == "not_found":
+            raise HTTPException(status_code=404, detail="RFO not found")
+        if error == "invalid":
+            raise HTTPException(status_code=400, detail="Invalid RFO status transition")
+        rfo = closed
+    if rfo.status != "CLOSED":
+        raise HTTPException(status_code=400, detail="RFO must be CLOSED for auto-award")
+
+    awarded, error = award_rfo(
+        session,
+        rfo_id,
+        reason,
+        offer_id=offer.id,
+        buyer_id=buyer.id,
+    )
+    if error == "not_found":
+        raise HTTPException(status_code=404, detail="RFO not found")
+    if error == "invalid":
+        raise HTTPException(status_code=400, detail="Invalid RFO status transition")
+    if error == "invalid_offer":
+        raise HTTPException(status_code=400, detail="Invalid offer for this RFO")
+
+    return AutoAwardResponse(
+        rfo_id=awarded.id,
+        status=awarded.status,
+        offer_id=offer.id,
+        score=score,
+        reason=awarded.status_reason,
     )
 
 

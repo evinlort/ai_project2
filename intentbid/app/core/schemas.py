@@ -580,3 +580,26 @@ class RFOExplainResponse(BaseModel):
     rfo_id: int
     scoring_version: str
     offers: list[BestOffer]
+
+
+class RFORecommendationResponse(BaseModel):
+    rfo_id: int
+    offer_id: int
+    score: float
+    explain: Dict[str, Any]
+    offer: OfferPublic
+    rationale: str
+
+
+class AutoAwardRequest(BaseModel):
+    opt_in: bool = False
+    reason: str | None = None
+    min_score: float | None = Field(default=None, ge=0)
+
+
+class AutoAwardResponse(BaseModel):
+    rfo_id: int
+    status: str
+    offer_id: int
+    score: float
+    reason: str | None = None
