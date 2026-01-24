@@ -56,7 +56,16 @@ def vendor_profile_get(
 ) -> VendorProfileResponse:
     profile = get_vendor_profile(session, vendor.id)
     if not profile:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+        return VendorProfileResponse(
+            vendor_id=vendor.id,
+            categories=[],
+            regions=[],
+            lead_time_days=None,
+            min_order_value=None,
+            on_time_delivery_rate=None,
+            dispute_rate=None,
+            verified_distributor=False,
+        )
     return VendorProfileResponse(
         vendor_id=vendor.id,
         categories=profile.categories,

@@ -94,13 +94,14 @@ def update_offer(
         if now > valid_until:
             raise HTTPException(status_code=400, detail="Offer validity window has expired")
 
-    last_update = offer.updated_at or offer.created_at
-    if last_update.tzinfo is None:
-        last_update = last_update.replace(tzinfo=timezone.utc)
-    if settings.offer_cooldown_seconds > 0:
-        cooldown_until = last_update + timedelta(seconds=settings.offer_cooldown_seconds)
-        if now < cooldown_until:
-            raise HTTPException(status_code=429, detail="Offer update cooldown active")
+    last_update = offer.updated_at
+    if last_update is not None:
+        if last_update.tzinfo is None:
+            last_update = last_update.replace(tzinfo=timezone.utc)
+        if settings.offer_cooldown_seconds > 0:
+            cooldown_until = last_update + timedelta(seconds=settings.offer_cooldown_seconds)
+            if now < cooldown_until:
+                raise HTTPException(status_code=429, detail="Offer update cooldown active")
 
     updates = payload.model_dump(exclude_unset=True)
     if "price_amount" in updates and updates["price_amount"] <= 0:
@@ -134,7 +135,7 @@ def update_offer(
     revision = OfferRevision(
         offer_id=offer.id,
         offer_version=offer.offer_version,
-        snapshot=offer.model_dump(),
+        snapshot=offer.model_dump(mode="json"),
     )
     session.add(revision)
 

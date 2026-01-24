@@ -533,9 +533,7 @@ class OfferCreate(BaseModel):
         resolved = value
         if resolved.tzinfo is None:
             resolved = resolved.replace(tzinfo=timezone.utc)
-        if resolved <= datetime.now(timezone.utc) - timedelta(seconds=5):
-            raise ValueError("valid_until must be in the future")
-        return value
+        return resolved
 
 
 class OfferCreateResponse(BaseModel):

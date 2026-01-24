@@ -11,8 +11,7 @@
 <section class="card" style="margin-top: 16px;">
   <h3>Использование плана</h3>
   <p class="muted">
-    План: {{ plan_usage.plan_code }} • Офферы за месяц: {{ plan_usage.used }} /
-    {{ plan_usage.limit if plan_usage.limit is not none else "без лимита" }}
+    План: {{ plan_usage.plan_code }} • Офферы за месяц: {{ plan_usage.used }} / {{ plan_usage.limit if plan_usage.limit is not none else "без лимита" }}
   </p>
 </section>
 {% endif %}
